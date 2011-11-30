@@ -1,8 +1,6 @@
 var canvas;     // place to put canvas
-var STAGE;      // STAGE for game to take place on
-var imgSeq = new Image();		//bmp of the sprite sheet
+var stage;      // stage for game to take place on
 var barry;      //our hero, Barry
-var shootHeld;      // is key pressed
 var lfHeld;      // is key pressed
 var rtHeld;      // is key pressed
 var upHeld;      // is key pressed
@@ -11,13 +9,14 @@ var KEYCODE_SPACE = 32;		//usefull keycode
 var KEYCODE_UP = 38;		//usefull keycode
 var KEYCODE_LEFT = 37;		//usefull keycode
 var KEYCODE_RIGHT = 39;		//usefull keycode
-var KEYCODE_W = 87;			//usefull keycode
-var KEYCODE_A = 65;			//usefull keycode
-var KEYCODE_D = 68;			//usefull keycode
+
+//register key functions
+document.onkeydown = handleKeyDown;
+document.onkeyup = handleKeyUp;
 
 function fireEvent(name, target) {
 	//Ready: create a generic event
-	var evt = document.createEvent("Events")
+	var evt = document.createEvent("Events");
 	//Aim: initialize it to be the event we want
 	evt.initEvent(name, true, true); //true for can bubble, true for cancelable
 	//FIRE!
@@ -26,44 +25,29 @@ function fireEvent(name, target) {
 
 function init() {
 	canvas = document.getElementById("canvas");
+    stage = new Stage(canvas);
+    // Stage properties
+    stage.h = 
     
-    STAGE = new Stage(canvas);
-    STAGE.name = "gameCanvas";
-
+    stage.name = "gameCanvas";
 	barry = new Barry();
 	//wait for sprite to load
-	
 	window.addEventListener("barryLoaded", handleBarryLoaded, false); //false to get it in bubble not capture.
-
 }
 
 function handleBarryLoaded() {
-
-	// create a new STAGE and point it at our canvas:
-
-	// grab canvas width and height for later calculations:
-	var w = canvas.width;
-	var h = canvas.height;
-	
-	console.log(Barry.prototype.sprite);
-	STAGE.addChild(Barry.prototype.sprite);
+	stage.addChild(barry);
 	Ticker.addListener(window);
-	
 }
 
-//allow for WASD and arrow control scheme
+//allow for arrow control scheme
 function handleKeyDown(e) {
-    console.log(e.keyCode);
 	//cross browser issues exist
 	if(!e){ var e = window.event; }
 	switch(e.keyCode) {
-		case KEYCODE_SPACE:	shootHeld = true; break;
-		case KEYCODE_A:
-		case KEYCODE_LEFT:	lfHeld = true; break;
-		case KEYCODE_D:
-		case KEYCODE_RIGHT: rtHeld = true; break;
-		case KEYCODE_W:
-		case KEYCODE_UP:	upHeld = true; break;
+		case KEYCODE_LEFT:	handleLf(); break;
+		case KEYCODE_RIGHT: handleRt(); break;
+		case KEYCODE_UP:	handleup(); break;
 	}
 }
 
@@ -71,22 +55,59 @@ function handleKeyUp(e) {
 	//cross browser issues exist
 	if(!e){ var e = window.event; }
 	switch(e.keyCode) {
-		case KEYCODE_SPACE:	shootHeld = false; break;
-		case KEYCODE_A:
-		case KEYCODE_LEFT:	lfHeld = false; break;
-		case KEYCODE_D:
-		case KEYCODE_RIGHT: rtHeld = false; break;
-		case KEYCODE_W:
-		case KEYCODE_UP:	upHeld = false; break;
+		case KEYCODE_LEFT:	handleLfLift(); break;
+		case KEYCODE_RIGHT: handleRtLift(); break;
+		case KEYCODE_UP:	handleuplift(); break;
 	}
+}
+
+// Key handlers
+function handleLf() {
+    if(!lfHeld) {
+        lfHeld = true;
+        barry.walkingLf = true;
+    }
+}
+
+function handleRt() {
+    if(!rtHeld) {
+        rtHeld = true;
+        barry.walkingRt = true;
+    }
+}
+
+function handleup() {
+    if(!upHeld) {
+        upHeld = true;
+        barry.jump();
+    }
+}
+function handleLfLift() {
+    lfHeld = false;
+    barry.walkingLf = false;
+}
+
+function handleRtLift() {
+    rtHeld = false;
+    barry.walkingRt = false;
+}
+
+function handleuplift() {
+    upHeld = false;
 }
 
 function tick() {
 
-    if(upHeld) {
-        console.log('upHeld');
+    // move barry
+    barry.x += barry.vX;
+    barry.y += barry.vY;
+    
+    // handle Barry's collisions with tiles on map
+    if(barry.y > canvas.height) {
+        barry.vY = 0;
+        barry.y = canvas.height;
     }
-
-	// update the STAGE:
-	STAGE.update();
+    
+	// update the stage:
+	stage.update();
 }
