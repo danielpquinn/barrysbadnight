@@ -1,0 +1,31 @@
+body {
+    font-family: Arial, sans;
+}
+
+#grid .square {
+    width: 8px;
+    height: 8px;
+    border: 1px solid black;
+    float: left;
+}
+
+.tile {
+    background: black;   
+}
+
+.enemy {
+    background: #BADA55;
+}
+
+.clear {
+    clear: both;
+}
+
+#message {
+    display: block;
+    border-radius: 4px;
+    border: 1px solid #ECE098;
+    background: #ECF5CB;
+    padding: 5px 10px;
+    float: left;
+}

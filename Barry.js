@@ -1,5 +1,4 @@
-(function(window) { //
-
+(function(window) {
 
     function Barry() {
         this.initialize();
@@ -8,14 +7,14 @@
     Barry.prototype = new BitmapSequence();
     
     // public properties:
-    Barry.prototype.speed = 7;
+    Barry.prototype.speed = 10;
     Barry.prototype.acc = 2;
     Barry.prototype.friction = 0.6;
     Barry.prototype.gravity = 2;
     Barry.prototype.jumpSpeed = -20;
-    Barry.prototype.walkingRt = false;
-    Barry.prototype.walkingLf = false;
-    Barry.prototype.jumping = false;
+    Barry.prototype.movingRt = false;
+    Barry.prototype.movingLf = false;
+    Barry.prototype.jumping = true;
     Barry.prototype.vX = 0;
     Barry.prototype.vY = 0;
     
@@ -23,14 +22,15 @@
     Barry.prototypeSrc = null;
 
     // constructor:
-    Barry.prototype.BitmapSequence_initialize = Barry.prototype.initialize;     
-    Barry.prototype.BitmapSequence_tick = Barry.prototype.tick; 
+    Barry.prototype.BitmapSequence_initialize = Barry.prototype.initialize;
+    Barry.prototype.BitmapSequence_tick = Barry.prototype.tick;
 
     // unique to avoid overiding base class
     Barry.prototype.initialize = function() {
         this.spriteSrc = new Image();
         //load Sprite
         this.spriteSrc.onload = this.handleSpriteLoaded;
+    	this.spriteSrc.onerror = this.handleImageError;
         this.spriteSrc.src = "sprites/barry.png";
         this.vX = 0;
         this.vY = 0;
@@ -50,13 +50,9 @@
             standpee: [23, 23],
             die: [24, 36]
         };
-        // create a new sprite sheet from the loaded image, and define the animation sequences in it.
-        // for example, {walkUprt:[0,19]} defines an animation sequence called "walkUprt" that
-        // will play back frames 0 to 19 inclusive.
+        
         var spriteSheet = new SpriteSheet(this, 26, 44, frameData);
-        // generate a new sprite sheet based on the old one, but adding new flipped animation sequences.
-        // the second param defines what new sequences to create, and how to flip them. It uses the format:
-        // {nameOfFlippedSequence:["derivativeSequence", flipHorizontally, flipVertically, optionNameOfNextSequence]}
+        
         spriteSheet = SpriteSheetUtils.flip(spriteSheet, {
             upLf: ['upRt', true, false],
             downLf: ['downRt', true, false],
@@ -65,14 +61,12 @@
         });
         // create a BitmapSequence instance to display and play back the sprite sheet:
         Barry.prototype.BitmapSequence_initialize(spriteSheet);
-        // set the registration point (the point it will be positioned and rotated around)
-        // to the center of the frame dimensions:
+        
         Barry.prototype.regX = Barry.prototype.spriteSheet.frameWidth / 2 | 0;
         Barry.prototype.regY = Barry.prototype.spriteSheet.frameHeight;
         Barry.prototype.x = 150;
         Barry.prototype.y = 150;
-        // snap to pixel, since he's pixel art
-        Barry.prototype.snapToPixel = true;
+        
         // start playing the first sequence:
         Barry.prototype.gotoAndPlay("stand"); //animate
         
@@ -81,28 +75,33 @@
     	fireEvent('barryLoaded', document);
         
     }
+
+    //called if there is an error loading the image (usually due to a 404)
+    Barry.prototype.handleImageError = function(e) {
+    	console.log("Error Loading Image : " + e.target.src);
+    }
     
     Barry.prototype.jump = function() {
-        console.log('trying to jump');
         if(!this.jumping) {
             this.vY = this.jumpSpeed;
+            this.jumping = true;
         }
     }
     
     Barry.prototype.tick = function() {
     
         // velocity calculations
-        if(this.walkingRt) {
+        if(this.movingRt) {
             if(this.vX < this.speed) {
                 this.vX += this.acc;
             }
         }
-        if(this.walkingLf) {
+        if(this.movingLf) {
             if(this.vX > this.speed * -1) {
                 this.vX -= this.acc;
             }
         }
-        if(!this.walkingLf && !this.walkingRt) {
+        if(!this.movingLf && !this.movingRt) {
             this.vX *= this.friction;
             if(Math.abs(this.vX) < 1) {
                 this.vX = 0;
@@ -112,7 +111,7 @@
             }
         }
         
-        // if not jumping, walk left or right
+        // animate depending on velocity
         if(this.vY === 0) {
             if(this.vX > 0) {
                 if(this.currentSequence != 'walkRt') {
@@ -130,16 +129,14 @@
         } else if(this.vY < 0 && this.vX === 0) {
             this.gotoAndPlay('up');
         } else if(this.vY > 0 && this.vX < 0) {
-            this.jumping = false;
             this.gotoAndPlay('downLf');
         } else if(this.vY > 0 && this.vX > 0) {
-            this.jumping = false;
             this.gotoAndPlay('downRt');
         } else {
-            this.jumping = false;        
             this.gotoAndPlay('down');
         }
         
+        // gravity rides everything
         this.vY += this.gravity;
     }
     window.Barry = Barry;

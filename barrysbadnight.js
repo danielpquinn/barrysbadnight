@@ -1,19 +1,57 @@
 var canvas;     // place to put canvas
 var stage;      // stage for game to take place on
-var barry;      //our hero, Barry
+var currLevel;  // current level
+var barry;      // our hero, Barry
 var lfHeld;      // is key pressed
 var rtHeld;      // is key pressed
 var upHeld;      // is key pressed
+var httpRequest;    // for level loading
 
 var KEYCODE_SPACE = 32;		//usefull keycode
 var KEYCODE_UP = 38;		//usefull keycode
 var KEYCODE_LEFT = 37;		//usefull keycode
 var KEYCODE_RIGHT = 39;		//usefull keycode
 
-//register key functions
+// register key functions
 document.onkeydown = handleKeyDown;
 document.onkeyup = handleKeyUp;
 
+function init() {
+	canvas = document.getElementById("canvas");
+    stage = new Stage(canvas);
+    stage.name = "gameCanvas";
+    // load first level data
+    loadLevel('levels/level1.json');
+}
+
+// Load level via ajax
+function loadLevel(url) {
+    httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = handleLevelLoaded;
+    httpRequest.open('GET', url);
+    httpRequest.send();
+}
+    
+function handleLevelLoaded() {
+    if (httpRequest.readyState === 4) {
+        if (httpRequest.status === 200) {
+            initLevel(httpRequest.responseText);
+        } else {
+          alert('There was a problem loading the level.');
+        }
+    }
+}
+
+function initLevel(lvl) {
+    console.log(typeof(lvl));
+    var json = JSON.parse(lvl);
+    console.log(json.tiles);
+	barry = new Barry();
+	//wait for sprite to load
+	window.addEventListener("barryLoaded", handleBarryLoaded, false); //false to get it in bubble not capture.
+}
+
+// Custom generic event to help simulate synchronous sprite loading
 function fireEvent(name, target) {
 	//Ready: create a generic event
 	var evt = document.createEvent("Events");
@@ -23,18 +61,6 @@ function fireEvent(name, target) {
 	target.dispatchEvent(evt);
 }
 
-function init() {
-	canvas = document.getElementById("canvas");
-    stage = new Stage(canvas);
-    // Stage properties
-    stage.h = 
-    
-    stage.name = "gameCanvas";
-	barry = new Barry();
-	//wait for sprite to load
-	window.addEventListener("barryLoaded", handleBarryLoaded, false); //false to get it in bubble not capture.
-}
-
 function handleBarryLoaded() {
 	stage.addChild(barry);
 	Ticker.addListener(window);
@@ -42,6 +68,7 @@ function handleBarryLoaded() {
 
 //allow for arrow control scheme
 function handleKeyDown(e) {
+    e.preventDefault();
 	//cross browser issues exist
 	if(!e){ var e = window.event; }
 	switch(e.keyCode) {
@@ -52,6 +79,7 @@ function handleKeyDown(e) {
 }
 
 function handleKeyUp(e) {
+    e.preventDefault();
 	//cross browser issues exist
 	if(!e){ var e = window.event; }
 	switch(e.keyCode) {
@@ -65,14 +93,14 @@ function handleKeyUp(e) {
 function handleLf() {
     if(!lfHeld) {
         lfHeld = true;
-        barry.walkingLf = true;
+        barry.movingLf = true;
     }
 }
 
 function handleRt() {
     if(!rtHeld) {
         rtHeld = true;
-        barry.walkingRt = true;
+        barry.movingRt = true;
     }
 }
 
@@ -84,12 +112,12 @@ function handleup() {
 }
 function handleLfLift() {
     lfHeld = false;
-    barry.walkingLf = false;
+    barry.movingLf = false;
 }
 
 function handleRtLift() {
     rtHeld = false;
-    barry.walkingRt = false;
+    barry.movingRt = false;
 }
 
 function handleuplift() {
@@ -105,6 +133,7 @@ function tick() {
     // handle Barry's collisions with tiles on map
     if(barry.y > canvas.height) {
         barry.vY = 0;
+        barry.jumping = false;
         barry.y = canvas.height;
     }
     
