@@ -4,16 +4,16 @@
         this.initialize();
     }
     
-    Barry.prototype = new BitmapSequence();
+    Barry.prototype = new BitmapAnimation();
     
     // public properties:
     Barry.prototype.speed = 10;
     Barry.prototype.acc = 2;
     Barry.prototype.friction = 0.6;
     Barry.prototype.gravity = 2;
-    Barry.prototype.jumpSpeed = -20;
+    Barry.prototype.jumpSpeed = -15;
     Barry.prototype.movingRt = false;
-    Barry.prototype.movingLf = false;
+    Barry.prototype.moving_h = false;
     Barry.prototype.jumping = true;
     Barry.prototype.vX = 0;
     Barry.prototype.vY = 0;
@@ -22,8 +22,8 @@
     Barry.prototypeSrc = null;
 
     // constructor:
-    Barry.prototype.BitmapSequence_initialize = Barry.prototype.initialize;
-    Barry.prototype.BitmapSequence_tick = Barry.prototype.tick;
+    Barry.prototype.BitmapAnimation_initialize = Barry.prototype.initialize;
+    Barry.prototype.BitmapAnimation_tick = Barry.prototype.tick;
 
     // unique to avoid overiding base class
     Barry.prototype.initialize = function() {
@@ -38,45 +38,40 @@
 
     // public methods:
     Barry.prototype.handleSpriteLoaded = function() {
-        var frameData = {
-            stand: [1, 1],
-            walkRt: [2, 11],
-            up: [12, 12],
-            upRt: [13, 13],
-            down: [14, 14],
-            downRt: [15, 15],
-            duck: [16, 16],
-            walkpee: [17, 22],
-            standpee: [23, 23],
-            die: [24, 36]
+        
+        var data = {
+            images: [this],
+    		frames: {width:26, height:44, regX:13, regY:44},
+    		animations: {
+    			stand:[1,1,"stand"],
+    			walk:[2,11,"walk"],
+    			up:[12,12,"up"],
+    			upSide:[13,13,"upSide"],
+    			down:[14,14,"down"],
+    			downSide:[15,15,"downSide"],
+    			duck:[16,16,"duck"],
+    			walkePee:[17,22,"walkPee"],
+    			standPee:[23,23,"standPee"],
+    			die:[24,36,"die"]
+    		}
         };
         
-        var spriteSheet = new SpriteSheet(this, 26, 44, frameData);
+        var spriteSheet = new SpriteSheet(data);
+        console.log(spriteSheet);
+        SpriteSheetUtils.addFlippedFrames(spriteSheet, true, false, false);
         
-        spriteSheet = SpriteSheetUtils.flip(spriteSheet, {
-            upLf: ['upRt', true, false],
-            downLf: ['downRt', true, false],
-            walkLf: ["walkRt", true, false],
-            walkPeelf: ["walkpee", true, false]
-        });
-        // create a BitmapSequence instance to display and play back the sprite sheet:
-        Barry.prototype.BitmapSequence_initialize(spriteSheet);
-        
-        Barry.prototype.regX = Barry.prototype.spriteSheet.frameWidth / 2 | 0;
-        Barry.prototype.regY = Barry.prototype.spriteSheet.frameHeight;
+        // create a BitmapAnimation instance to display and play back the sprite sheet:
+        Barry.prototype.BitmapAnimation_initialize(spriteSheet);
+        console.log(Barry.prototype);
         Barry.prototype.x = 150;
         Barry.prototype.y = 150;
         
-        // start playing the first sequence:
-        Barry.prototype.gotoAndPlay("stand"); //animate
-        
     	// fire barryLoaded Event
-    	console.log(Barry.prototype);
     	fireEvent('barryLoaded', document);
         
     }
 
-    //called if there is an error loading the image (usually due to a 404)
+    // called if there is an error loading the image (usually due to a 404)
     Barry.prototype.handleImageError = function(e) {
     	console.log("Error Loading Image : " + e.target.src);
     }
@@ -114,24 +109,24 @@
         // animate depending on velocity
         if(this.vY === 0) {
             if(this.vX > 0) {
-                if(this.currentSequence != 'walkRt') {
-                    this.gotoAndPlay('walkRt');
+                if(this.currentAnimation != 'walk') {
+                    this.gotoAndPlay('walk');
                 }
             } else if (this.vX < 0) {
-                if(this.currentSequence != 'walkLf') {
-                    this.gotoAndPlay('walkLf');
+                if(this.currentAnimation != 'walk_h') {
+                    this.gotoAndPlay('walk_h');
                 }
             }
         } else if(this.vY < 0 && this.vX < 0) {
-            this.gotoAndPlay('upLf');
+            this.gotoAndPlay('upSide_h');
         } else if(this.vY < 0 && this.vX > 0) {
-            this.gotoAndPlay('upRt');
+            this.gotoAndPlay('upSide');
         } else if(this.vY < 0 && this.vX === 0) {
             this.gotoAndPlay('up');
         } else if(this.vY > 0 && this.vX < 0) {
-            this.gotoAndPlay('downLf');
+            this.gotoAndPlay('downSide_h');
         } else if(this.vY > 0 && this.vX > 0) {
-            this.gotoAndPlay('downRt');
+            this.gotoAndPlay('downSide');
         } else {
             this.gotoAndPlay('down');
         }

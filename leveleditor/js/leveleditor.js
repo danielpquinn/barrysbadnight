@@ -12,6 +12,8 @@ $('document').ready(function() {
 
     lvlArray = [];
     lvlJSON = {
+        'width': 0,
+        'height': 0,
         'lvlArray': lvlArray
     }
     grid = $('#grid');
@@ -30,22 +32,22 @@ $('document').ready(function() {
             typeButtons.append(typeButton);
         }
     }
-    
+
     tileTypeButtons();
 
     $('#submit-grid').bind('click', function(e) {
         e.preventDefault();
         gridWidth = $('#grid-width').val();
         gridHeight = $('#grid-height').val();
+        lvlJSON.width = gridWidth;
+        lvlJSON.height = gridHeight;
         messageBox.text('Grid dimensions: ' + gridWidth + 'x' + gridHeight);
         makeGrid(gridWidth, gridHeight);
     });
-    
+
     function makeGrid(w,h) {
         for(var i = 0; i < h; i++) {
-            lvlArray.push([]);
             for(var n = 0; n < w; n++) {
-                lvlArray[i].push(0);
                 var tile = $('<div />');
                 tile.addClass('square');
                 grid.append(tile);
@@ -61,8 +63,12 @@ $('document').ready(function() {
             }
             $this.addClass(tileTypes[currType]);
             var clickedIndex = $('.square').index($this);
-            messageBox.text('Math.floor(clickedIndex / gridWidth): ' + Math.floor(clickedIndex / gridWidth) + ' clickedIndex: ' + clickedIndex + '\n' + ' clickedIndex%gridWidth: ' + clickedIndex%gridWidth);
-            lvlArray[Math.floor(clickedIndex / gridWidth)][clickedIndex%gridWidth] = currType;
+
+            var clickedRow = Math.floor(clickedIndex / gridWidth);
+            var clickedCol = clickedIndex%gridWidth;
+
+            lvlArray.push({x:clickedRow, y:clickedCol, type: currType});
+
         });
     }
     

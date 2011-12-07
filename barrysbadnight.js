@@ -43,9 +43,8 @@ function handleLevelLoaded() {
 }
 
 function initLevel(lvl) {
-    console.log(typeof(lvl));
     var json = JSON.parse(lvl);
-    console.log(json.tiles);
+    console.log(json);
 	barry = new Barry();
 	//wait for sprite to load
 	window.addEventListener("barryLoaded", handleBarryLoaded, false); //false to get it in bubble not capture.
