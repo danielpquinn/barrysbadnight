@@ -1,4 +1,4 @@
-var lvlArray;
+var levelArray;
 var lvlJSON;
 var grid;
 var gridWidth;
@@ -10,11 +10,11 @@ var currType;
 
 $('document').ready(function() {
 
-    lvlArray = [];
+    levelArray = [];
     lvlJSON = {
         'width': 0,
         'height': 0,
-        'lvlArray': lvlArray
+        'levelArray': levelArray
     }
     grid = $('#grid');
     tileTypes = ['empty', 'tile', 'enemy'];
@@ -47,7 +47,9 @@ $('document').ready(function() {
 
     function makeGrid(w,h) {
         for(var i = 0; i < h; i++) {
+        		levelArray[i] = [];
             for(var n = 0; n < w; n++) {
+            		levelArray[i].push(0);
                 var tile = $('<div />');
                 tile.addClass('square');
                 grid.append(tile);
@@ -66,8 +68,7 @@ $('document').ready(function() {
 
             var clickedRow = Math.floor(clickedIndex / gridWidth);
             var clickedCol = clickedIndex%gridWidth;
-
-            lvlArray.push({x:clickedRow, y:clickedCol, type: currType});
+						levelArray[clickedRow][clickedCol] = currType;
 
         });
     }

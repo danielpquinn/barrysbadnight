@@ -1,18 +1,28 @@
 body {
+		font-family: Arial;
     padding: 0px;
     margin: 0px;
+    text-align: center;
 }
 
 #canvas {
-    width: 100%;
-    height: 100%;
     background: url('../images/lvl1Bg.png') left bottom;
 }
 
 #game {
+		margin: 0 auto;
+		text-align: left;
     position: relative;
-    width: 100%;
-    height: 100%;
+}
+
+#fps {
+	position: absolute;
+	left: 50px;
+	top: 50px;
+	display: block;
+	background: white;
+	padding: 10px 20px;
+	
 }
 
 
