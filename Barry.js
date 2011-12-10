@@ -7,11 +7,11 @@
     Barry.prototype = new BitmapAnimation();
     
     // public properties:
-    Barry.prototype.speed = 10;
-    Barry.prototype.acc = 2;
+    Barry.prototype.speed = 9;
+    Barry.prototype.acc = 4;
     Barry.prototype.friction = 0.6;
     Barry.prototype.gravity = 2;
-    Barry.prototype.jumpSpeed = -15;
+    Barry.prototype.jumpSpeed = -20;
     Barry.prototype.movingRt = false;
     Barry.prototype.moving_h = false;
     Barry.prototype.jumping = true;
@@ -38,10 +38,11 @@
 
     // public methods:
     Barry.prototype.handleSpriteLoaded = function() {
+
         
         var data = {
             images: [this],
-    		frames: {width:26, height:44, regX:13, regY:44},
+    		frames: {width:50, height:87, regX:25, regY:82},
     		animations: {
     			stand:[1,1,"stand"],
     			walk:[2,11,"walk"],
@@ -52,17 +53,15 @@
     			duck:[16,16,"duck"],
     			walkePee:[17,22,"walkPee"],
     			standPee:[23,23,"standPee"],
-    			die:[24,36,"die"]
+    			die:[24,34,"die"]
     		}
         };
         
         var spriteSheet = new SpriteSheet(data);
-        console.log(spriteSheet);
         SpriteSheetUtils.addFlippedFrames(spriteSheet, true, false, false);
         
         // create a BitmapAnimation instance to display and play back the sprite sheet:
         Barry.prototype.BitmapAnimation_initialize(spriteSheet);
-        console.log(Barry.prototype);
         Barry.prototype.x = 150;
         Barry.prototype.y = 150;
         
@@ -104,6 +103,12 @@
                 this.gotoAndPlay('stand');
                 this.paused = true;
             }
+        }
+        if(this.x > 480) {
+            this.x = 0;
+        }
+        if(this.x < 0) {
+            this.x = 480;
         }
         
         // animate depending on velocity

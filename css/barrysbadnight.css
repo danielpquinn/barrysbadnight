@@ -4,7 +4,46 @@ body {
 }
 
 #canvas {
-    width: 960px;
-    height: 640px;
-    border: 1px solid black;
+    width: 100%;
+    height: 100%;
+    background: url('../images/lvl1Bg.png') left bottom;
+}
+
+#game {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* Buttons
+------------------------------ */
+
+#btn-right,
+#btn-left,
+#btn-up-left,
+#btn-up-right {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+}
+
+#btn-left {
+    left: 0;
+    top: 50%;
+}
+
+#btn-up-left {
+    left: 0;
+    top: 0;
+}
+
+#btn-right {
+    right: 0;
+    top: 50%; 
+}
+
+#btn-up-right {
+    right: 0;
+    top: 0;
 }

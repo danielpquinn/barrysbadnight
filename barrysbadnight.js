@@ -12,14 +12,23 @@ var KEYCODE_UP = 38;		//usefull keycode
 var KEYCODE_LEFT = 37;		//usefull keycode
 var KEYCODE_RIGHT = 39;		//usefull keycode
 
+var btnLeft;
+var btnRight;
+var btnUpLeft;
+var btnUpRight;
+
 // register key functions
 document.onkeydown = handleKeyDown;
 document.onkeyup = handleKeyUp;
 
 function init() {
-	canvas = document.getElementById("canvas");
+	canvas = document.getElementById('canvas');
+	btnLeft = document.getElementById('btn-left');
+	btnUpLeft = document.getElementById('btn-up-left');
+	btnRight = document.getElementById('btn-right');
+	btnUpRight = document.getElementById('btn-up-right');
     stage = new Stage(canvas);
-    stage.name = "gameCanvas";
+    stage.name = 'gameCanvas';
     // load first level data
     loadLevel('levels/level1.json');
 }
@@ -44,16 +53,15 @@ function handleLevelLoaded() {
 
 function initLevel(lvl) {
     var json = JSON.parse(lvl);
-    console.log(json);
 	barry = new Barry();
 	//wait for sprite to load
-	window.addEventListener("barryLoaded", handleBarryLoaded, false); //false to get it in bubble not capture.
+	window.addEventListener('barryLoaded', handleBarryLoaded, false); //false to get it in bubble not capture.
 }
 
 // Custom generic event to help simulate synchronous sprite loading
 function fireEvent(name, target) {
 	//Ready: create a generic event
-	var evt = document.createEvent("Events");
+	var evt = document.createEvent('Events');
 	//Aim: initialize it to be the event we want
 	evt.initEvent(name, true, true); //true for can bubble, true for cancelable
 	//FIRE!
@@ -61,65 +69,78 @@ function fireEvent(name, target) {
 }
 
 function handleBarryLoaded() {
+    btnLeft.addEventListener('touchstart', handleRt, true);
+    btnLeft.addEventListener('touchend', handleRtLift, true);
+    btnUpLeft.addEventListener('touchstart', handleUp, true);
+    btnUpLeft.addEventListener('touchend', handleUpLift, true);
+    btnRight.addEventListener('touchstart', handleLf, true);
+    btnRight.addEventListener('touchend', handleLfLift, true);
+    btnUpRight.addEventListener('touchstart', handleUp, true);
+    btnUpRight.addEventListener('touchend', handleUpLift, true);
 	stage.addChild(barry);
+	Ticker.setInterval(35);
 	Ticker.addListener(window);
 }
 
 //allow for arrow control scheme
 function handleKeyDown(e) {
-    e.preventDefault();
 	//cross browser issues exist
 	if(!e){ var e = window.event; }
 	switch(e.keyCode) {
 		case KEYCODE_LEFT:	handleLf(); break;
 		case KEYCODE_RIGHT: handleRt(); break;
-		case KEYCODE_UP:	handleup(); break;
+		case KEYCODE_UP:	handleUp(); break;
 	}
 }
 
 function handleKeyUp(e) {
-    e.preventDefault();
 	//cross browser issues exist
 	if(!e){ var e = window.event; }
 	switch(e.keyCode) {
 		case KEYCODE_LEFT:	handleLfLift(); break;
 		case KEYCODE_RIGHT: handleRtLift(); break;
-		case KEYCODE_UP:	handleuplift(); break;
+		case KEYCODE_UP:	handleUpLift(); break;
 	}
 }
 
 // Key handlers
-function handleLf() {
+function handleLf(event) {
+    event.preventDefault();
     if(!lfHeld) {
         lfHeld = true;
         barry.movingLf = true;
     }
 }
 
-function handleRt() {
+function handleRt(event) {
+    event.preventDefault();
     if(!rtHeld) {
         rtHeld = true;
         barry.movingRt = true;
     }
 }
 
-function handleup() {
+function handleUp(event) {
+    event.preventDefault();
     if(!upHeld) {
         upHeld = true;
         barry.jump();
     }
 }
-function handleLfLift() {
+function handleLfLift(event) {
+    event.preventDefault();
     lfHeld = false;
     barry.movingLf = false;
 }
 
-function handleRtLift() {
+function handleRtLift(event) {
+    event.preventDefault();
     rtHeld = false;
     barry.movingRt = false;
 }
 
-function handleuplift() {
+function handleUpLift(event) {
+    event.preventDefault();
     upHeld = false;
 }
 
