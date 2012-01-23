@@ -3,7 +3,7 @@
 		this.initialize();
 	}
 	Barry.prototype = new BitmapAnimation(); // public properties:
-	Barry.prototype.speed = 9;
+	Barry.prototype.speed = 10;
 	Barry.prototype.acc = 4;
 	Barry.prototype.friction = 0.6;
 	Barry.prototype.gravity = 2;
@@ -30,7 +30,7 @@
 			frames: {
 				width: 50,
 				height: 87,
-				regX: 25,
+				regX: 30,
 				regY: 82
 			},
 			animations: {
@@ -78,7 +78,6 @@
 			this.vX *= this.friction;
 			if (Math.abs(this.vX) < 1) {
 				this.vX = 0;
-				this.x = Math.floor(this.x);
 				this.gotoAndPlay('stand');
 				this.paused = true;
 			}

@@ -6,19 +6,12 @@ var lfHeld;	// is key pressed
 var rtHeld;	// is key pressed
 var upHeld;	// is key pressed
 var httpRequest;	// for level loading
-var xIndex;
-var yIndex;
-var currBrick;
 
+var TILESIZE = 40;
 var KEYCODE_SPACE = 32;	//usefull keycode
 var KEYCODE_UP = 38;	//usefull keycode
 var KEYCODE_LEFT = 37;	//usefull keycode
 var KEYCODE_RIGHT = 39;	//usefull keycode
-
-var btnLeft;
-var btnRight;
-var btnUpLeft;
-var btnUpRight;
 
 // register key functions
 document.onkeydown = handleKeyDown;
@@ -43,7 +36,6 @@ function init() {
 	btnUpLeft = document.getElementById('btn-up-left');
 	btnRight = document.getElementById('btn-right');
 	btnUpRight = document.getElementById('btn-up-right');
-	$fps = $('#fps');
 	stage = new Stage(canvas);
 	stage.name = 'gameCanvas';
 	
@@ -59,17 +51,19 @@ function handleLevelLoaded() {
 }
 
 function handleBarryLoaded() {
-	btnLeft.addEventListener('touchstart', handleLf, true);
-	btnLeft.addEventListener('touchend', handleLfLift, true);
-	btnUpLeft.addEventListener('touchstart', handleUp, true);
-	btnUpLeft.addEventListener('touchend', handleUpLift, true);
-	btnRight.addEventListener('touchstart', handleRt, true);
-	btnRight.addEventListener('touchend', handleRtLift, true);
-	btnUpRight.addEventListener('touchstart', handleUp, true);
-	btnUpRight.addEventListener('touchend', handleUpLift, true);
+	canvas.addEventListener('touchstart', handleStart, true);
+	canvas.addEventListener('touchend', handleEnd, true);
 	stage.addChild(barry);
 	Ticker.setInterval(30);
 	Ticker.addListener(window);
+}
+
+function handleStart(e) {
+	
+}
+
+function handleEnd(e) {
+	
 }
 
 //allow for arrow control scheme
@@ -135,34 +129,54 @@ function handleUpLift(event) {
 }
 
 function tick() {
-		//$fps.html(Ticker.getFPS());
 
     // move barry
 		
     barry.x += barry.vX;
     barry.y += barry.vY;
     
-  	rIndex = Math.floor((barry.x + 25) / 40);
-  	lIndex = Math.floor((barry.x - 25) / 40);
-  	yIndex = Math.floor(barry.y / 40);
+  	rIndex = Math.floor((barry.x + 15) / TILESIZE);
+  	lIndex = Math.floor((barry.x - 15) / TILESIZE);
+ 
+  	if(barry.vY < 0) {
+	  	yIndex = Math.floor((barry.y + TILESIZE) / TILESIZE);
+	}else {
+	  	yIndex = Math.floor((barry.y) / TILESIZE);
+	}
 
-    if(barry.vY > 0) {
-	    if(level.levelData.levelArray[yIndex][rIndex] === 1 || level.levelData.levelArray[yIndex][lIndex] === 1) {
-	    	barry.y = yIndex * 40;
-	    	barry.vY = 0;
-	    	barry.jumping = false;	 
-	    }
-    }
     if(barry.vX > 0) {
-	    if(level.levelData.levelArray[yIndex - 1][rIndex] === 1) {
-	    	barry.x = (rIndex * 40) - 25;
+	    if(level.levelData.levelArray[yIndex - 2][rIndex] === 1 || level.levelData.levelArray[yIndex - 1][rIndex] === 1) {
+	    	barry.x = (rIndex * TILESIZE) - 16;
+	    	barry.vX = 0;
+  			rIndex = Math.floor((barry.x + 15) / TILESIZE);
     	}
     }
     if(barry.vX < 0) {
-	    if(level.levelData.levelArray[yIndex - 1][lIndex] === 1) {
-	    	barry.x = ((lIndex + 1) * 40) + 25;
+	    if(level.levelData.levelArray[yIndex - 2][lIndex] === 1 || level.levelData.levelArray[yIndex - 1][lIndex] === 1) {
+	    	barry.x = (lIndex + 1) * TILESIZE + 16;
+	    	barry.vX = 0;
+  			lIndex = Math.floor((barry.x - 15) / TILESIZE);
     	}
     }
+
+    if(barry.vY > 0) {
+	    if(level.levelData.levelArray[yIndex][rIndex] === 1 || level.levelData.levelArray[yIndex][lIndex] === 1) {
+	    	barry.y = yIndex * TILESIZE;
+	    	barry.vY = 0;
+	    	barry.jumping = false;
+	    }
+    }
+
+    if(barry.vY < 0) {
+	    if(level.levelData.levelArray[yIndex - 3][rIndex] === 1 || level.levelData.levelArray[yIndex - 3][lIndex] === 1) {
+	    	barry.y = yIndex * TILESIZE;
+	    	barry.vY = 0;
+	    	barry.jumping = false;
+	    }
+    }
+
+    //Draw Barry on whole pixel
+    barry.x = Math.round(barry.x);
     
 	// update the stage:
 	stage.update();

@@ -29,8 +29,8 @@
 				switch (Level.prototype.levelData.levelArray[i][n]) {
 				case 1:
 					var tile = new Bitmap('images/tile.png');
-					tile.x = n * 40;
-					tile.y = i * 40;
+					tile.x = n * TILESIZE;
+					tile.y = i * TILESIZE;
 					Level.prototype.addChild(tile);
 				}
 			}
