@@ -1,8 +1,8 @@
 (function(window) {
 
 //
-function Projectile() {
-	this.initialize();
+function Projectile(vX, vY) {
+	this.initialize(vX, vY);
 }
 
 Projectile.prototype = new Shape();
@@ -18,9 +18,11 @@ Projectile.prototype = new Shape();
 // constructor:
 	Projectile.prototype.Shape_initialize = Projectile.prototype.initialize;	//unique to avoid overiding base class
 	
-	Projectile.prototype.initialize = function() {
+	Projectile.prototype.initialize = function(vX, vY) {
 		this.Shape_initialize(); // super call
-		this.life = 200;
+		this.vX = vX;
+		this.vY = vY;
+		this.life = 50;
 		this.getShape();
 	}
 

@@ -8,7 +8,6 @@
 	Barry.prototype.speed = 12;
 	Barry.prototype.acc = 2;
 	Barry.prototype.friction = 0.7;
-	Barry.prototype.gravity = 2;
 	Barry.prototype.jumpSpeed = -20;
 	Barry.prototype.movingRt = false;
 	Barry.prototype.moving_h = false;
@@ -120,10 +119,8 @@
 		} else {
 			this.gotoAndPlay('down');
 		}
-
-		// gravity rides everything
-		this.vY += this.gravity;
+		
 	}
-	
+
 	window.Barry = Barry;
 }(window));

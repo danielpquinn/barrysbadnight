@@ -1,22 +1,26 @@
-var canvas;	// place to put canvas
-var stage;	// stage for game to take place on
-var level;	// current level
-var barry;	// our hero, Barry
-var lfHeld;	// is key pressed
-var rtHeld;	// is key pressed
-var upHeld;	// is key pressed
-var httpRequest;	// for level loading
-var projectiles;
-
 var TILESIZE = 40;
+var GRAVITY = 2;
 var KEYCODE_SPACE = 32;	//usefull keycode
 var KEYCODE_UP = 38;	//usefull keycode
 var KEYCODE_LEFT = 37;	//usefull keycode
 var KEYCODE_RIGHT = 39;	//usefull keycode
 
-// register key functions
+var canvas;				// place to put canvas
+var stage;				// stage for game to take place on
+var level;				// current level
+var barry;				// our hero, Barry
+var lfHeld;				// is key pressed
+var rtHeld;				// is key pressed
+var upHeld;				// is key pressed
+var httpRequest;		// for level loading
+var projectiles;		// array of projectiles
+var clickStart;			// used to calculate projectile vector
+
+// Events
 document.onkeydown = handleKeyDown;
 document.onkeyup = handleKeyUp;
+document.addEventListener('mousedown', handleMouseDown);
+document.addEventListener('mouseup', handleMouseUp);
 
 // custom generic event to help simulate synchronous asset loading
 function fireEvent(name, target) {
@@ -35,7 +39,6 @@ function init() {
 	canvas = document.getElementById('canvas');
 	stage = new Stage(canvas);
 	stage.name = 'gameCanvas';
-	document.addEventListener('mousedown', handleMouseDown);
 	
 	window.addEventListener('levelLoaded', handleLevelLoaded, false);	// load first level data
 	level = new Level('levels/level1.json');
@@ -45,8 +48,6 @@ function handleLevelLoaded() {
 	stage.addChild(level);
 	console.log(stage);
 	canvas.addEventListener('mousedown', handleMouseDown, false);
-	canvas.addEventListener('touchstart', handleStart, false);
-	canvas.addEventListener('touchend', handleEnd, false);
 	projectiles = [];
 	barry = new Barry();
 	//wait for sprite to load
@@ -60,9 +61,15 @@ function handleBarryLoaded() {
 }
 
 function handleMouseDown(e) {
-	var projectile = new Projectile(20);
-	projectile.x = e.x;
-	projectile.y = e.y;
+	clickStart = [e.x, e.y];
+}
+
+function handleMouseUp(e) {
+	var vX = (clickStart[0] - e.x) / 8 + barry.vX;
+	var vY = (clickStart[1] - e.y) / 8 + barry.vY;
+	var projectile = new Projectile(vX, vY);
+	projectile.x = barry.x;
+	projectile.y = barry.y - 25;
 	projectiles.push(projectile);
 	stage.addChild(projectile);
 }
@@ -140,6 +147,9 @@ function handleUpLift(event) {
 function moveBarry() {
 
     // move barry
+
+	// gravity rides everything
+	barry.vY += GRAVITY;
 		
     barry.x += barry.vX;
     barry.y += barry.vY;
@@ -190,20 +200,46 @@ function moveBarry() {
 
 function moveProjectiles() {
 	for(var i = 0; i < projectiles.length; i++) {
-		projectiles[i].x++;
-		projectiles[i].life--;
-		if(projectiles[i].life === 0) {
-			stage.removeChild(projectiles[i]);
-			projectiles.slice(i, 1);
+		var p = projectiles[i];
+		p.vY += GRAVITY / 2;
+		p.x += p.vX;
+		p.y += p.vY;
+		if(p.vY > 0) {
+			if(level.levelData.levelArray[Math.floor(p.y / TILESIZE)][Math.floor(p.x / TILESIZE)] === 1) {
+				p.y = Math.floor(p.y / TILESIZE) * TILESIZE;
+				p.vY *= -1;
+			}
+		}
+		if(p.vX > 0) {
+			if(level.levelData.levelArray[Math.floor(p.y/TILESIZE)][Math.floor(p.x / TILESIZE)] === 1) {
+				p.x = Math.floor(p.x / TILESIZE) * TILESIZE - 5;
+				p.vX *= -1;
+			}
+		} else if(p.vX < 0) {
+			if(level.levelData.levelArray[Math.floor(p.y / TILESIZE)][Math.floor(p.x / TILESIZE)] === 1) {
+				p.x = Math.ceil(p.x / TILESIZE) * TILESIZE - 5;
+				p.vX *= -1;
+			}
+		}
+		p.life--;
+		if(p.life === 0) {
+			stage.removeChild(p);
+			projectiles.splice(i, 1);
 		}
 	}
 }
 
+function handleCollisions() {
+	
+}
+
 function tick() {
     
-    moveBarry();
+    // moveBarry();
 
-    moveProjectiles();
+    // moveProjectiles();
+
+    handleCollisions();
 
 	// update the stage:
 	stage.update();
