@@ -6,6 +6,7 @@ var lfHeld;	// is key pressed
 var rtHeld;	// is key pressed
 var upHeld;	// is key pressed
 var httpRequest;	// for level loading
+var projectiles;
 
 var TILESIZE = 40;
 var KEYCODE_SPACE = 32;	//usefull keycode
@@ -32,12 +33,9 @@ function init() {
 	window.scrollTo(0, window.height);
 	// grab some stuff out of the dom
 	canvas = document.getElementById('canvas');
-	btnLeft = document.getElementById('btn-left');
-	btnUpLeft = document.getElementById('btn-up-left');
-	btnRight = document.getElementById('btn-right');
-	btnUpRight = document.getElementById('btn-up-right');
 	stage = new Stage(canvas);
 	stage.name = 'gameCanvas';
+	document.addEventListener('mousedown', handleMouseDown);
 	
 	window.addEventListener('levelLoaded', handleLevelLoaded, false);	// load first level data
 	level = new Level('levels/level1.json');
@@ -45,17 +43,28 @@ function init() {
 
 function handleLevelLoaded() {
 	stage.addChild(level);
+	console.log(stage);
+	canvas.addEventListener('mousedown', handleMouseDown, false);
+	canvas.addEventListener('touchstart', handleStart, false);
+	canvas.addEventListener('touchend', handleEnd, false);
+	projectiles = [];
 	barry = new Barry();
 	//wait for sprite to load
 	window.addEventListener('barryLoaded', handleBarryLoaded, false); //false to get it in bubble not capture.
 }
 
 function handleBarryLoaded() {
-	canvas.addEventListener('touchstart', handleStart, true);
-	canvas.addEventListener('touchend', handleEnd, true);
 	stage.addChild(barry);
 	Ticker.setInterval(30);
 	Ticker.addListener(window);
+}
+
+function handleMouseDown(e) {
+	var projectile = new Projectile(20);
+	projectile.x = e.x;
+	projectile.y = e.y;
+	projectiles.push(projectile);
+	stage.addChild(projectile);
 }
 
 function handleStart(e) {
@@ -128,7 +137,7 @@ function handleUpLift(event) {
     upHeld = false;
 }
 
-function tick() {
+function moveBarry() {
 
     // move barry
 		
@@ -177,7 +186,25 @@ function tick() {
 
     //Draw Barry on whole pixel
     barry.x = Math.round(barry.x);
+}
+
+function moveProjectiles() {
+	for(var i = 0; i < projectiles.length; i++) {
+		projectiles[i].x++;
+		projectiles[i].life--;
+		if(projectiles[i].life === 0) {
+			stage.removeChild(projectiles[i]);
+			projectiles.slice(i, 1);
+		}
+	}
+}
+
+function tick() {
     
+    moveBarry();
+
+    moveProjectiles();
+
 	// update the stage:
 	stage.update();
 }

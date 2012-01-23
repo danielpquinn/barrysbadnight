@@ -1,19 +1,25 @@
 (function(window) {
+
 	function Barry() {
 		this.initialize();
 	}
+
 	Barry.prototype = new BitmapAnimation(); // public properties:
-	Barry.prototype.speed = 10;
-	Barry.prototype.acc = 4;
-	Barry.prototype.friction = 0.6;
+	Barry.prototype.speed = 12;
+	Barry.prototype.acc = 2;
+	Barry.prototype.friction = 0.7;
 	Barry.prototype.gravity = 2;
 	Barry.prototype.jumpSpeed = -20;
 	Barry.prototype.movingRt = false;
 	Barry.prototype.moving_h = false;
 	Barry.prototype.jumping = true;
 	Barry.prototype.vX = 0;
-	Barry.prototype.vY = 0; // public properties
-	Barry.prototypeSrc = null; // constructor:
+	Barry.prototype.vY = 0;
+
+	// public properties
+	Barry.prototypeSrc = null;
+
+	// constructor:
 	Barry.prototype.BitmapAnimation_initialize = Barry.prototype.initialize;
 	Barry.prototype.BitmapAnimation_tick = Barry.prototype.tick; // unique to avoid overiding base class
 	Barry.prototype.initialize = function() {
@@ -23,7 +29,9 @@
 		this.spriteSrc.src = "sprites/barry.png";
 		this.vX = 0;
 		this.vY = 0;
-	} // public methods:
+	}
+
+	// public methods:
 	Barry.prototype.handleSpriteLoaded = function() {
 		var data = {
 			images: [this],
@@ -51,9 +59,12 @@
 		Barry.prototype.BitmapAnimation_initialize(spriteSheet);
 		Barry.prototype.x = 150;
 		Barry.prototype.y = 150;
+
 		// fire barryLoaded Event
 		fireEvent('barryLoaded', document);
-	} // called if there is an error loading the image (usually due to a 404)
+	} 
+
+	// called if there is an error loading the image (usually due to a 404)
 	Barry.prototype.handleImageError = function(e) {
 		console.log("Error Loading Image : " + e.target.src);
 	}
@@ -63,7 +74,9 @@
 			this.jumping = true;
 		}
 	}
-	Barry.prototype.tick = function() { // velocity calculations
+	Barry.prototype.tick = function() {
+
+		// velocity stuff
 		if (this.movingRt) {
 			if (this.vX < this.speed) {
 				this.vX += this.acc;
@@ -76,12 +89,13 @@
 		}
 		if (!this.movingLf && !this.movingRt) {
 			this.vX *= this.friction;
-			if (Math.abs(this.vX) < 1) {
+			if (Math.abs(this.vX) < .5) {
 				this.vX = 0;
 				this.gotoAndPlay('stand');
 				this.paused = true;
 			}
 		}
+
 		// animate depending on velocity
 		if (this.vY === 0) {
 			if (this.vX > 0) {
@@ -105,8 +119,11 @@
 			this.gotoAndPlay('downSide');
 		} else {
 			this.gotoAndPlay('down');
-		} // gravity rides everything
+		}
+
+		// gravity rides everything
 		this.vY += this.gravity;
 	}
+	
 	window.Barry = Barry;
 }(window));
