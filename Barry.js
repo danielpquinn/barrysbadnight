@@ -4,19 +4,22 @@
 		this.initialize();
 	}
 
-	Barry.prototype = new BitmapAnimation(); // public properties:
+	Barry.prototype = new BitmapAnimation();
+	Barry.prototypeSrc = null;
+
+	// public properties:
 	Barry.prototype.speed = 12;
 	Barry.prototype.acc = 2;
-	Barry.prototype.friction = 0.7;
+	Barry.prototype.friction = 1;
+	Barry.prototype.restitution = 0;
 	Barry.prototype.jumpSpeed = -20;
 	Barry.prototype.movingRt = false;
 	Barry.prototype.moving_h = false;
-	Barry.prototype.jumping = true;
+	Barry.prototype.jumping = false;
 	Barry.prototype.vX = 0;
 	Barry.prototype.vY = 0;
-
-	// public properties
-	Barry.prototypeSrc = null;
+	Barry.prototype.width = 0;
+	Barry.prototype.height = 0;
 
 	// constructor:
 	Barry.prototype.BitmapAnimation_initialize = Barry.prototype.initialize;
@@ -28,6 +31,8 @@
 		this.spriteSrc.src = "sprites/barry.png";
 		this.vX = 0;
 		this.vY = 0;
+		this.width = 35;
+		this.height = 60;
 	}
 
 	// public methods:
@@ -37,7 +42,7 @@
 			frames: {
 				width: 50,
 				height: 87,
-				regX: 30,
+				regX: 25,
 				regY: 82
 			},
 			animations: {
@@ -70,24 +75,26 @@
 	Barry.prototype.jump = function() {
 		if (!this.jumping) {
 			this.vY = this.jumpSpeed;
-			this.jumping = true;
+			//this.jumping = true;
 		}
 	}
 	Barry.prototype.tick = function() {
 
 		// velocity stuff
 		if (this.movingRt) {
+			this.friction = 1;
 			if (this.vX < this.speed) {
 				this.vX += this.acc;
 			}
 		}
 		if (this.movingLf) {
+			this.friction = 1;
 			if (this.vX > this.speed * -1) {
 				this.vX -= this.acc;
 			}
 		}
 		if (!this.movingLf && !this.movingRt) {
-			this.vX *= this.friction;
+			this.friction = 0.7;
 			if (Math.abs(this.vX) < .5) {
 				this.vX = 0;
 				this.gotoAndPlay('stand');
