@@ -55,8 +55,6 @@ function init() {
 function handleLevelLoaded() {
 	stage.addChild(level);
 	barry = new Crabity();
-	barry.scaleX = 0.5;
-	barry.scaleY = 0.5;
 	//wait for sprite to load
 	window.addEventListener('barryLoaded', handleBarryLoaded, false); //false to get it in bubble not capture.
 }

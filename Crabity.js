@@ -28,10 +28,10 @@
 		var data = {
 			images: [this],
 			frames: {
-				width: 80,
-				height: 80,
+				width: 40,
+				height: 40,
 				regX: 25,
-				regY: 77
+				regY: 37
 			},
 			animations: {
 				// stand: [1, 1, "stand"],
