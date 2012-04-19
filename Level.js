@@ -3,9 +3,7 @@
 		this.initialize(dataURL);
 	}
 	Level.prototype = new Container();
-	// public properties:
-	Level.prototype.tile = new Image();
-	Level.prototype.tiles = [];
+	Level.prototype.tile = new Image(); // public properties:
 	// constructor:
 	Level.prototype.Container_initialize = Level.prototype.initialize;
 	Level.prototype.initialize = function(dataURL) {
@@ -27,15 +25,13 @@
 		var json = JSON.parse(levelData);
 		this.levelData = json;
 		for (var i = 0; i < Level.prototype.levelData.levelArray.length; i++) {
-			this.tiles[i] = [];
 			for (var n = 0; n < Level.prototype.levelData.levelArray[0].length; n++) {
 				switch (Level.prototype.levelData.levelArray[i][n]) {
 				case 1:
 					var tile = new Bitmap('images/tile.png');
-					this.tiles[i][n] = tile;
-					tile.x = n * TILESIZE;
-					tile.y = i * TILESIZE;
-					this.addChild(tile);
+					tile.x = n * 40;
+					tile.y = i * 40;
+					Level.prototype.addChild(tile);
 				}
 			}
 		}

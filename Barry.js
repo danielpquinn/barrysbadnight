@@ -1,27 +1,19 @@
 (function(window) {
-
 	function Barry() {
 		this.initialize();
 	}
-
-	Barry.prototype = new BitmapAnimation();
-	Barry.prototypeSrc = null;
-
-	// public properties:
-	Barry.prototype.speed = 12;
-	Barry.prototype.acc = 2;
-	Barry.prototype.friction = 1;
-	Barry.prototype.restitution = 0;
+	Barry.prototype = new BitmapAnimation(); // public properties:
+	Barry.prototype.speed = 9;
+	Barry.prototype.acc = 4;
+	Barry.prototype.friction = 0.6;
+	Barry.prototype.gravity = 2;
 	Barry.prototype.jumpSpeed = -20;
 	Barry.prototype.movingRt = false;
 	Barry.prototype.moving_h = false;
-	Barry.prototype.jumping = false;
+	Barry.prototype.jumping = true;
 	Barry.prototype.vX = 0;
-	Barry.prototype.vY = 0;
-	Barry.prototype.width = 0;
-	Barry.prototype.height = 0;
-
-	// constructor:
+	Barry.prototype.vY = 0; // public properties
+	Barry.prototypeSrc = null; // constructor:
 	Barry.prototype.BitmapAnimation_initialize = Barry.prototype.initialize;
 	Barry.prototype.BitmapAnimation_tick = Barry.prototype.tick; // unique to avoid overiding base class
 	Barry.prototype.initialize = function() {
@@ -31,11 +23,7 @@
 		this.spriteSrc.src = "sprites/barry.png";
 		this.vX = 0;
 		this.vY = 0;
-		this.width = 35;
-		this.height = 60;
-	}
-
-	// public methods:
+	} // public methods:
 	Barry.prototype.handleSpriteLoaded = function() {
 		var data = {
 			images: [this],
@@ -63,45 +51,38 @@
 		Barry.prototype.BitmapAnimation_initialize(spriteSheet);
 		Barry.prototype.x = 150;
 		Barry.prototype.y = 150;
-
 		// fire barryLoaded Event
 		fireEvent('barryLoaded', document);
-	} 
-
-	// called if there is an error loading the image (usually due to a 404)
+	} // called if there is an error loading the image (usually due to a 404)
 	Barry.prototype.handleImageError = function(e) {
 		console.log("Error Loading Image : " + e.target.src);
 	}
 	Barry.prototype.jump = function() {
 		if (!this.jumping) {
 			this.vY = this.jumpSpeed;
-			//this.jumping = true;
+			this.jumping = true;
 		}
 	}
-	Barry.prototype.tick = function() {
-
-		// velocity stuff
+	Barry.prototype.tick = function() { // velocity calculations
 		if (this.movingRt) {
-			this.friction = 1;
 			if (this.vX < this.speed) {
 				this.vX += this.acc;
 			}
 		}
 		if (this.movingLf) {
-			this.friction = 1;
 			if (this.vX > this.speed * -1) {
 				this.vX -= this.acc;
 			}
 		}
 		if (!this.movingLf && !this.movingRt) {
-			this.friction = 0.7;
-			if (Math.abs(this.vX) < .5) {
+			this.vX *= this.friction;
+			if (Math.abs(this.vX) < 1) {
 				this.vX = 0;
+				this.x = Math.floor(this.x);
 				this.gotoAndPlay('stand');
 				this.paused = true;
 			}
 		}
-
 		// animate depending on velocity
 		if (this.vY === 0) {
 			if (this.vX > 0) {
@@ -125,9 +106,8 @@
 			this.gotoAndPlay('downSide');
 		} else {
 			this.gotoAndPlay('down');
-		}
-		
+		} // gravity rides everything
+		this.vY += this.gravity;
 	}
-
 	window.Barry = Barry;
 }(window));
