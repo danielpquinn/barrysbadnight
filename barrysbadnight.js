@@ -2,24 +2,19 @@ var canvas;	// place to put canvas
 var stage;	// stage for game to take place on
 var level;	// current level
 var barry;	// our hero, Barry
+var pObjs; // Array of objects to act on
 var lfHeld;	// is key pressed
 var rtHeld;	// is key pressed
 var upHeld;	// is key pressed
 var httpRequest;	// for level loading
-var xIndex;
-var yIndex;
-var bIndex;
-var currBrick;
 
 var KEYCODE_SPACE = 32;	//usefull keycode
 var KEYCODE_UP = 38;	//usefull keycode
 var KEYCODE_LEFT = 37;	//usefull keycode
 var KEYCODE_RIGHT = 39;	//usefull keycode
 
-var btnLeft;
-var btnRight;
-var btnUpLeft;
-var btnUpRight;
+var GRAVITY = 1.5;	// global gravity
+var TILESIZE = 40;	// global tilesize
 
 // register key functions
 document.onkeydown = handleKeyDown;
@@ -40,34 +35,23 @@ function init() {
 	window.scrollTo(0, window.height);
 	// grab some stuff out of the dom
 	canvas = document.getElementById('canvas');
-	btnLeft = document.getElementById('btn-left');
-	btnUpLeft = document.getElementById('btn-up-left');
-	btnRight = document.getElementById('btn-right');
-	btnUpRight = document.getElementById('btn-up-right');
-	$fps = $('#fps');
+	pObjs = [];
 	stage = new Stage(canvas);
 	stage.name = 'gameCanvas';
 	
-	window.addEventListener('levelLoaded', handleLevelLoaded, false);	// load first level data
+	// load first level data
+	window.addEventListener('levelLoaded', handleLevelLoaded, false);
 	level = new Level('levels/level1.json');
 }
 
 function handleLevelLoaded() {
 	stage.addChild(level);
-	barry = new Crabity();
-	//wait for sprite to load
-	window.addEventListener('barryLoaded', handleBarryLoaded, false); //false to get it in bubble not capture.
+	barry = new Barry();
+	window.addEventListener('barryLoaded', handleBarryLoaded, false);
 }
 
 function handleBarryLoaded() {
-	btnLeft.addEventListener('touchstart', handleLf, true);
-	btnLeft.addEventListener('touchend', handleLfLift, true);
-	btnUpLeft.addEventListener('touchstart', handleUp, true);
-	btnUpLeft.addEventListener('touchend', handleUpLift, true);
-	btnRight.addEventListener('touchstart', handleRt, true);
-	btnRight.addEventListener('touchend', handleRtLift, true);
-	btnUpRight.addEventListener('touchstart', handleUp, true);
-	btnUpRight.addEventListener('touchend', handleUpLift, true);
+	pObjs.push(barry);
 	stage.addChild(barry);
 	Ticker.setInterval(30);
 	Ticker.addListener(window);
@@ -97,37 +81,26 @@ function handleKeyUp(e) {
 // Key handlers
 function handleLf(event) {
     event.preventDefault();
-    if(!lfHeld) {
-        lfHeld = true;
-        barry.movingLf = true;
-    }
+    lfHeld = true;
 }
 
 function handleRt(event) {
     event.preventDefault();
-    if(!rtHeld) {
-        rtHeld = true;
-        barry.movingRt = true;
-    }
+    rtHeld = true;
 }
 
 function handleUp(event) {
     event.preventDefault();
-    if(!upHeld) {
-        upHeld = true;
-        barry.jump();
-    }
+    upHeld = true;
 }
 function handleLfLift(event) {
     event.preventDefault();
     lfHeld = false;
-    barry.movingLf = false;
 }
 
 function handleRtLift(event) {
     event.preventDefault();
     rtHeld = false;
-    barry.movingRt = false;
 }
 
 function handleUpLift(event) {
@@ -136,36 +109,51 @@ function handleUpLift(event) {
 }
 
 function tick() {
-		//$fps.html(Ticker.getFPS());
 
-    // move barry
+	for (var i = 0; i < pObjs.length; i++) {
 		
-    barry.x += barry.vX;
-    barry.y += barry.vY;
-    
-  	rIndex = Math.floor((barry.x + 25) / 40);
-  	lIndex = Math.floor((barry.x - 25) / 40);
-  	bIndex = Math.floor(barry.x / 40);
-  	yIndex = Math.floor(barry.y / 40);
+		var ob = pObjs[i],
+			h = ob.width / 2,
+			a = level.levelData.levelArray;
 
-    if(barry.vY > 0) {
-	    if(level.levelData.levelArray[yIndex][bIndex] === 1) {
-	    	barry.y = yIndex * 40;
-	    	barry.vY = 0;
-	    	barry.jumping = false;	 
-	    }
-    }
-    if(barry.vX > 0) {
-	    if(level.levelData.levelArray[yIndex - 1][rIndex] === 1) {
-	    	barry.x = (rIndex * 40) - 25;
-    	}
-    }
-    if(barry.vX < 0) {
-	    if(level.levelData.levelArray[yIndex - 1][lIndex] === 1) {
-	    	barry.x = ((lIndex + 1) * 40) + 25;
-    	}
-    }
-    
+		ob.vY += GRAVITY;
+		ob.y += ob.vY;
+
+		if (Math.abs(ob.vX) < 1) {
+			ob.vX = 0;
+		}
+
+		// Downward collision detection
+		if (ob.vY > 0) {
+			if (	a[Math.floor(ob.y / TILESIZE)][Math.floor(ob.x / TILESIZE)] === 1
+				||	a[Math.floor(ob.y / TILESIZE)][Math.floor((ob.x + h) / TILESIZE)] === 1
+				||	a[Math.floor(ob.y / TILESIZE)][Math.floor((ob.x - h) / TILESIZE)] === 1) {
+				ob.vY *= ob.restitution;
+				if (Math.abs(ob.vY) < 1) { ob.vY = 0 }
+				ob.y = Math.floor(ob.y / TILESIZE) * TILESIZE;
+			}
+		}
+
+		// Collision detect moving right
+		if (ob.vX > 0) {
+			if (	a[Math.ceil((ob.y - 1) / TILESIZE) - 1][Math.floor((ob.x + h) / TILESIZE)] === 1) {
+				ob.vX *= ob.restitution;
+				ob.x = (Math.ceil(ob.x / TILESIZE) * TILESIZE) - h;
+			}
+		}
+
+		// Collision detect moving left
+		if (ob.vX < 0) {
+			if (	a[Math.floor((ob.y - 1) / TILESIZE)][Math.floor((ob.x - h) / TILESIZE)] === 1) {
+				ob.vX *= ob.restitution;
+				ob.x = (Math.floor(ob.x / TILESIZE) * TILESIZE) + h;
+			}
+		}
+
+		ob.x += Math.floor(ob.vX);
+
+	}
+
 	// update the stage:
 	stage.update();
 }
