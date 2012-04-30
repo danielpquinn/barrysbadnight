@@ -1,7 +1,9 @@
 var canvas;	// place to put canvas
 var stage;	// stage for game to take place on
 var level;	// current level
+var lvlArr; // tile array
 var barry;	// our hero, Barry
+var camera;
 var pObjs; // Array of objects to act on
 var lfHeld;	// is key pressed
 var rtHeld;	// is key pressed
@@ -15,6 +17,7 @@ var KEYCODE_RIGHT = 39;	//usefull keycode
 
 var GRAVITY = 1.5;	// global gravity
 var TILESIZE = 40;	// global tilesize
+var DEBUG = true;	// debug mode
 
 // register key functions
 document.onkeydown = handleKeyDown;
@@ -45,16 +48,18 @@ function init() {
 }
 
 function handleLevelLoaded() {
+	lvlArr = level.levelData.levelArray;
 	stage.addChild(level);
-	barry = new Barry();
+	barry = new Barry(level.levelData.startPos[1] * TILESIZE, level.levelData.startPos[0] * TILESIZE);
 	window.addEventListener('barryLoaded', handleBarryLoaded, false);
 }
 
 function handleBarryLoaded() {
 	pObjs.push(barry);
-	stage.addChild(barry);
-	Ticker.setInterval(30);
+	level.addChild(barry);
+	Ticker.setInterval(36);
 	Ticker.addListener(window);
+	camera = new Camera(stage, level, barry);
 }
 
 //allow for arrow control scheme
@@ -108,52 +113,64 @@ function handleUpLift(event) {
     upHeld = false;
 }
 
+function checkCollisions(ob) {
+
+	var h = ob.width / 2;
+
+	ob.vY += GRAVITY;
+	ob.pY += ob.vY;
+	ob.pX += ob.vX;
+
+	if (Math.abs(ob.vX) < 0.1) {
+		ob.vX = 0;
+	}
+
+	// Collision detection moving vertically
+	if (ob.vY > 0) {
+		if (	lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX + (h / 2)) / TILESIZE)] === 1
+			||	lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX - (h / 2)) / TILESIZE)] === 1) {
+			ob.vY *= ob.restitution;
+			ob.pY = Math.floor(ob.pY / TILESIZE) * TILESIZE;
+		}
+	} else if (ob.vY < 0) {
+		if (	lvlArr[Math.ceil((ob.pY - ob.height) / TILESIZE - 1)][Math.floor((ob.pX + h - (h / 2)) / TILESIZE)] === 1
+			||	lvlArr[Math.ceil((ob.pY - ob.height) / TILESIZE - 1)][Math.floor((ob.pX - h + (h / 2)) / TILESIZE)] === 1) {
+			ob.vY = 1;
+			ob.pY = Math.ceil(ob.pY / TILESIZE) * TILESIZE;
+		}
+	}
+
+	// Collision detection moving horizontally
+	if (ob.vX > 0) {
+		if (	lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1
+			||	lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1
+			||	lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1) {
+			ob.vX *= ob.restitution;
+			ob.pX = (Math.ceil(ob.pX / TILESIZE) * TILESIZE) - h;
+		}
+	} else if (ob.vX < 0) {
+		if (lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1
+			||	lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1
+			||	lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1) {
+			ob.vX *= ob.restitution;
+			ob.pX = (Math.floor(ob.pX / TILESIZE) * TILESIZE) + h;
+		}
+	}
+
+	ob.x = Math.floor(ob.pX);
+	ob.y = Math.floor(ob.pY);
+}
+
 function tick() {
 
 	for (var i = 0; i < pObjs.length; i++) {
-		
-		var ob = pObjs[i],
-			h = ob.width / 2,
-			a = level.levelData.levelArray;
-
-		ob.vY += GRAVITY;
-		ob.y += ob.vY;
-
-		if (Math.abs(ob.vX) < 1) {
-			ob.vX = 0;
-		}
-
-		// Downward collision detection
-		if (ob.vY > 0) {
-			if (	a[Math.floor(ob.y / TILESIZE)][Math.floor(ob.x / TILESIZE)] === 1
-				||	a[Math.floor(ob.y / TILESIZE)][Math.floor((ob.x + h) / TILESIZE)] === 1
-				||	a[Math.floor(ob.y / TILESIZE)][Math.floor((ob.x - h) / TILESIZE)] === 1) {
-				ob.vY *= ob.restitution;
-				if (Math.abs(ob.vY) < 1) { ob.vY = 0 }
-				ob.y = Math.floor(ob.y / TILESIZE) * TILESIZE;
-			}
-		}
-
-		// Collision detect moving right
-		if (ob.vX > 0) {
-			if (	a[Math.ceil((ob.y - 1) / TILESIZE) - 1][Math.floor((ob.x + h) / TILESIZE)] === 1) {
-				ob.vX *= ob.restitution;
-				ob.x = (Math.ceil(ob.x / TILESIZE) * TILESIZE) - h;
-			}
-		}
-
-		// Collision detect moving left
-		if (ob.vX < 0) {
-			if (	a[Math.floor((ob.y - 1) / TILESIZE)][Math.floor((ob.x - h) / TILESIZE)] === 1) {
-				ob.vX *= ob.restitution;
-				ob.x = (Math.floor(ob.x / TILESIZE) * TILESIZE) + h;
-			}
-		}
-
-		ob.x += Math.floor(ob.vX);
-
+		checkCollisions(pObjs[i]);
 	}
+
+	// update camera:
+	camera.update();
 
 	// update the stage:
 	stage.update();
+
 }

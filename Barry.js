@@ -1,13 +1,14 @@
 (function(window) {
 
-	function Barry() {
-		this.initialize();
+	function Barry(startX, startY) {
+		this.initialize(startX, startY);
 	}
 
 	Barry.prototype = new BitmapAnimation();
 
-	// public properties:
 	jQuery.extend(Barry.prototype, physicalObject, Barry.prototype);
+
+	// public properties:
 	Barry.prototype.jumpSpeed = -20;
 	Barry.prototype.jumping = true;
 
@@ -16,12 +17,14 @@
 	// unique to avoid overiding base class
 	Barry.prototype.BitmapAnimation_tick = Barry.prototype.tick;
 	
-	Barry.prototype.initialize = function() {
+	Barry.prototype.initialize = function(startX, startY) {
 
 		this.width = 32;
 		this.height = 80;
 		this.speed = 10;
 		this.acc = 4;
+		this.pX = startX;
+		this.pY = startY;
 		this.restitution = 0;
 		this.spriteSrc = new Image();
 
@@ -29,6 +32,7 @@
 		this.spriteSrc.onload = this.handleSpriteLoaded;
 		this.spriteSrc.onerror = this.handleImageError;
 		this.spriteSrc.src = "sprites/barry.png";
+		console.log(this);
 	}
 
 	// public methods:
@@ -59,8 +63,8 @@
 
 		// create a BitmapAnimation instance to display and play back the sprite sheet:
 		Barry.prototype.BitmapAnimation_initialize(spriteSheet);
-		Barry.prototype.x = 150;
-		Barry.prototype.y = 150;
+		Barry.prototype.x = Barry.prototype.pX;
+		Barry.prototype.y = Barry.prototype.pY;
 		
 		// fire barryLoaded Event
 		fireEvent('barryLoaded', document);
@@ -93,10 +97,7 @@
 		}
 
 		if (upHeld) {
-			if (!this.jumping) {
-				this.jumping = true;
-				this.vY += this.jumpSpeed;
-			}
+			this.jump();
 		}
 
 		// animate depending on velocity

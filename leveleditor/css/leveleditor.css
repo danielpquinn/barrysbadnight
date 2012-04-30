@@ -17,6 +17,10 @@ body {
     background: #BADA55;
 }
 
+.startposition {
+    background: #ff5500;
+}
+
 .clear {
     clear: both;
 }
