@@ -6,8 +6,6 @@
 
 	Crabity.prototype = new BitmapAnimation();
 
-	jQuery.extend(Crabity.prototype, physicalObject, Crabity.prototype);
-
 	Crabity.prototype.BitmapAnimation_initialize = Crabity.prototype.initialize;
 
 	// unique to avoid overiding base class
@@ -15,22 +13,26 @@
 	
 	Crabity.prototype.initialize = function(startX, startY) {
 
+		jQuery.extend(this, physicalObject, this);
+
 		this.width = 40;
 		this.height = 40;
 		this.pX = startX;
 		this.pY = startY;
 		this.vX = 5;
+		this.friction = 0.99;
 		this.restitution = -0.4;
 		this.spriteSrc = new Image();
 
 		var self = this;
 
 		function randomMovement() {
-			self.vX *= (Math.random() * 5);
+			self.vX += (Math.random() * 10);
 			self.vY = (Math.random() * 20 + 10) * -1;
+			console.log(self.vX);
 		}
 
-		this.t = setInterval(function(){randomMovement()}, 3000);
+		this.t = setInterval(function(){randomMovement()}, Math.random() * 5000);
 
 		// load Sprite
 		this.spriteSrc.onload = this.handleSpriteLoaded;
@@ -75,6 +77,7 @@
 
 	Crabity.prototype.tick = function() {
 
+		this.vX *= this.friction;
 		if (this.vY < 0 && this.vX < 0) {
 			this.gotoAndPlay('attack');
 		} else if (this.vY < 0 && this.vX > 0) {

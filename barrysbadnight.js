@@ -54,9 +54,8 @@ function handleLevelLoaded() {
 	lvlArr = level.levelData.levelArray;
 	stage.addChild(level);
 	barry = new Barry(level.levelData.startPos[1] * TILESIZE, level.levelData.startPos[0] * TILESIZE);
-	crabity = new Crabity(300, 300);
+	addEnemies();
 	window.addEventListener('barryLoaded', handleBarryLoaded, false);
-	window.addEventListener('crabityLoaded', handleCrabityLoaded, false);
 }
 
 function handleBarryLoaded() {
@@ -67,9 +66,17 @@ function handleBarryLoaded() {
 	camera = new Camera(stage, level, barry);
 }
 
-function handleCrabityLoaded() {
-	pObjs.push(crabity);
-	level.addChild(crabity);
+function addEnemies() {
+	for (var i = 0; i < lvlArr.length; i++) {
+		for (var n = 0; n < lvlArr[0].length; n++) {
+			switch (lvlArr[i][n]) {
+			case 2:
+				var enemy = new Crabity(n * TILESIZE, i * TILESIZE);
+				pObjs.push(enemy);
+				level.addChild(enemy);
+			}
+		}
+	}
 }
 
 //allow for arrow control scheme
