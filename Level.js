@@ -17,7 +17,7 @@
 			if (httpRequest.status === 200) {
 				Level.prototype.initLevel(httpRequest.responseText);
 			} else {
-				alert('There was a problem loading the level.');
+				alert(httpRequest.status + ': There was a problem loading the level.');
 			}
 		}
 	}

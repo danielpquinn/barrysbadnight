@@ -1,27 +1,31 @@
-var canvas;	// place to put canvas
-var stage;	// stage for game to take place on
-var level;	// current level
-var lvlArr; // tile array
-var barry;	// our hero, Barry
-var camera;
-var pObjs; // Array of objects to act on
-var lfHeld;	// is key pressed
-var rtHeld;	// is key pressed
-var upHeld;	// is key pressed
-var httpRequest;	// for level loading
+var canvas;  // place to put canvas
+var stage;  // stage for game to take place on
+var level;  // current level
+var lvlArr;  // tile array
+var barry;  // our hero, Barry
+var enemies;  // array of enemies
+var camera;  // camera
+var pObjs;  // Array of objects to act on
+var lfHeld;  // is key pressed
+var rtHeld;  // is key pressed
+var upHeld;  // is key pressed
+var httpRequest;  // for level loading
+var fpsBox;  // for level loading
 
-var KEYCODE_SPACE = 32;	//usefull keycode
-var KEYCODE_UP = 38;	//usefull keycode
-var KEYCODE_LEFT = 37;	//usefull keycode
-var KEYCODE_RIGHT = 39;	//usefull keycode
+var KEYCODE_SPACE = 32;  //usefull keycode
+var KEYCODE_UP = 38;  //usefull keycode
+var KEYCODE_LEFT = 37;  //usefull keycode
+var KEYCODE_RIGHT = 39;  //usefull keycode
 
-var GRAVITY = 1.5;	// global gravity
-var TILESIZE = 40;	// global tilesize
-var DEBUG = true;	// debug mode
+var GRAVITY = 1.5;  // global gravity
+var TILESIZE = 40;  // global tilesize
+var DEBUG = true;  // debug mode
 
 // register key functions
 document.onkeydown = handleKeyDown;
 document.onkeyup = handleKeyUp;
+document.ontouchstart = handleTouchStart;
+document.ontouchend = handleTouchEnd;
 
 // custom generic event to help simulate synchronous asset loading
 function fireEvent(name, target) {
@@ -34,14 +38,13 @@ function fireEvent(name, target) {
 }
 
 function init() {
-	// scroll below URL bar in mobile devices
-	window.scrollTo(0, window.height);
 	// grab some stuff out of the dom
 	canvas = document.getElementById('canvas');
+	fpsBox = document.getElementById('fps');
 	pObjs = [];
 	stage = new Stage(canvas);
 	stage.name = 'gameCanvas';
-	
+
 	// load first level data
 	window.addEventListener('levelLoaded', handleLevelLoaded, false);
 	level = new Level('levels/level1.json');
@@ -51,15 +54,22 @@ function handleLevelLoaded() {
 	lvlArr = level.levelData.levelArray;
 	stage.addChild(level);
 	barry = new Barry(level.levelData.startPos[1] * TILESIZE, level.levelData.startPos[0] * TILESIZE);
+	crabity = new Crabity(300, 300);
 	window.addEventListener('barryLoaded', handleBarryLoaded, false);
+	window.addEventListener('crabityLoaded', handleCrabityLoaded, false);
 }
 
 function handleBarryLoaded() {
 	pObjs.push(barry);
 	level.addChild(barry);
-	Ticker.setInterval(36);
+	Ticker.setInterval(20);
 	Ticker.addListener(window);
 	camera = new Camera(stage, level, barry);
+}
+
+function handleCrabityLoaded() {
+	pObjs.push(crabity);
+	level.addChild(crabity);
 }
 
 //allow for arrow control scheme
@@ -80,6 +90,30 @@ function handleKeyUp(e) {
 		case KEYCODE_LEFT:	handleLfLift(e); break;
 		case KEYCODE_RIGHT: handleRtLift(e); break;
 		case KEYCODE_UP:	handleUpLift(e); break;
+	}
+}
+
+function handleTouchStart(e) {
+	e.preventDefault();
+	var t = e.changedTouches[0];
+	if (t.clientX < 480 && t.clientY > 320) {
+		handleLf(e);
+	}else if (t.clientX > 480 && t.clientY > 320) {
+		handleRt(e);
+	}else {
+		handleUp(e);
+	}
+}
+
+function handleTouchEnd(e) {
+	e.preventDefault();
+	var t = e.changedTouches[0];
+	if (t.clientX < 480 && t.clientY > 320) {
+		handleLfLift(e);
+	}else if (t.clientX > 480 && t.clientY > 320) {
+		handleRtLift(e);
+	}else {
+		handleUpLift(e);
 	}
 }
 
@@ -165,6 +199,10 @@ function tick() {
 
 	for (var i = 0; i < pObjs.length; i++) {
 		checkCollisions(pObjs[i]);
+	}
+
+	if (DEBUG) {
+		fpsBox.innerHTML = Math.floor(Ticker.getMeasuredFPS());
 	}
 
 	// update camera:

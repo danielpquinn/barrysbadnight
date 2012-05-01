@@ -28,11 +28,11 @@
 		this.restitution = 0;
 		this.spriteSrc = new Image();
 
-		//load Sprite
+		// load Sprite
 		this.spriteSrc.onload = this.handleSpriteLoaded;
 		this.spriteSrc.onerror = this.handleImageError;
 		this.spriteSrc.src = "sprites/barry.png";
-		console.log(this);
+
 	}
 
 	// public methods:
@@ -75,13 +75,6 @@
 		console.log("Error Loading Image : " + e.target.src);
 	}
 
-	Barry.prototype.jump = function() {
-		if (!this.jumping) {
-			this.vY = this.jumpSpeed;
-			this.jumping = true;
-		}
-	}
-
 	Barry.prototype.tick = function() {
 
 		if (lfHeld) {
@@ -96,8 +89,9 @@
 			this.vX *= this.friction;
 		}
 
-		if (upHeld) {
-			this.jump();
+		if (upHeld && this.vY === 0) {
+			this.vY = this.jumpSpeed;
+			this.jumping = true;
 		}
 
 		// animate depending on velocity
@@ -106,7 +100,6 @@
 			this.paused = true;
 		}
 		if (this.vY === 0) {
-			this.jumping = false;
 			if (this.vX > 0) {
 				if (this.currentAnimation != 'walk') {
 					this.gotoAndPlay('walk');

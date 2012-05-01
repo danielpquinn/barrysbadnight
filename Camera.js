@@ -13,11 +13,6 @@
 		this.minX = ((this.container.levelData.width * TILESIZE) * -1) + (jQuery(stage.canvas).width());
 		this.minY = ((this.container.levelData.height * TILESIZE) * -1) + (jQuery(stage.canvas).height());
 
-		console.log('offsetX: ' + this.offsetX);
-		console.log('offsetY: ' + this.offsetY);
-		console.log('minX: ' + this.minX);
-		console.log('minY: ' + this.minY);
-
 	}
 
 	Camera.prototype.update = function() {
