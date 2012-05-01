@@ -27,12 +27,11 @@
 		var self = this;
 
 		function randomMovement() {
-			self.vX += (Math.random() * 10);
+			self.vX += self.vX > 0 ? 5 : -5;
 			self.vY = (Math.random() * 20 + 10) * -1;
-			console.log(self.vX);
 		}
 
-		this.t = setInterval(function(){randomMovement()}, Math.random() * 5000);
+		this.t = setInterval(function(){randomMovement()}, Math.random() * 5000 + 3000);
 
 		// load Sprite
 		this.spriteSrc.onload = this.handleSpriteLoaded;
