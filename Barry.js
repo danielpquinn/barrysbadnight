@@ -11,6 +11,7 @@
 	// public properties:
 	Barry.prototype.jumpSpeed = -20;
 	Barry.prototype.jumping = true;
+	Barry.prototype.name = 'barry';
 
 	Barry.prototype.BitmapAnimation_initialize = Barry.prototype.initialize;
 

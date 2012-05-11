@@ -10,12 +10,13 @@
 		this.height = 18;
 		this.regX = 9;
 		this.regY = 18;
+		this.name = 'projectile';
 	}
 
 	Projectile.prototype = new Bitmap('sprites/projectile.png');
 	jQuery.extend(Projectile.prototype, physicalObject, Projectile.prototype);
 
-	Projectile.prototype.life = 50;
+	Projectile.prototype.life = 150;
 
 	Projectile.prototype.tick = function() {
 		this.life--;
@@ -23,7 +24,7 @@
 			this.parent.removeChild(this);
 			pObjs.splice(pObjs.indexOf(this), 1);
 		}
-	}
+	};
 
 	window.Projectile = Projectile;
 

@@ -1,4 +1,5 @@
 physicalObject = {
+	type: null,
 	width: 0,
 	height: 0,
 	pX: 0,
@@ -9,4 +10,4 @@ physicalObject = {
 	acc: 0,
 	friction: 0.5,
 	restitution: -0.3
-}
+};

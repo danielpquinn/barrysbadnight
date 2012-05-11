@@ -58,6 +58,9 @@ $('document').ready(function() {
             clear.addClass('clear');
             $grid.append(clear);
         }
+        $grid.css({
+            'width': levelArray[0].length * 17 + 'px'
+        });
         $('.square').bind('mousedown', function() {
             $this = $(this);
             var clickedIndex = $('.square').index($this);

@@ -9,11 +9,12 @@
 		this.offsetY = jQuery(stage.canvas).height() / 2;
 		this.container = container;
 		this.focalPoint = focalPoint;
+		this.canvas = jQuery('#canvas');
 
 		this.minX = ((this.container.levelData.width * TILESIZE) * -1) + (jQuery(stage.canvas).width());
 		this.minY = ((this.container.levelData.height * TILESIZE) * -1) + (jQuery(stage.canvas).height());
 
-	}
+	};
 
 	Camera.prototype.update = function() {
 		this.container.x = ((this.focalPoint.x * -1) + this.offsetX);
@@ -32,11 +33,11 @@
 
 
 
-	}
+	};
 
 	Camera.prototype.focus = function(focalPoint) {
 		this.focalPoint = focalPoint;
-	}
+	};
 
 	window.Camera = Camera;
 
