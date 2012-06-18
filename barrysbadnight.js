@@ -27,6 +27,8 @@ document.onkeydown    = handleKeyDown;
 document.onkeyup      = handleKeyUp;
 document.ontouchstart = handleTouchStart;
 document.ontouchend   = handleTouchEnd;
+document.onmousedown  = handleMouseDown;
+document.onmouseup  = handleMouseUp;
 
 // custom generic event to help simulate synchronous asset loading
 function fireEvent(name, target) {
@@ -58,11 +60,26 @@ function handleLevelLoaded() {
 }
 
 function handleBarryLoaded() {
+	
+	var n;
+
 	POBJS.push(barry);
 	level.addChild(barry);
 	Ticker.setInterval(30);
 	Ticker.addListener(window);
 	camera = new Camera(stage, level, barry);
+
+	console.log(POBJS.length);
+	for(n in POBJS) {
+		// Nesting ifs again ;)
+		if(n.name != 'projectile') {
+			console.log(n);
+			if(this.x < (POBJS[n].x + this.radius) && this.x > (POBJS[n].x - this.radius)) {
+				console.log('hit');
+			}
+		}
+	}
+
 }
 
 function addEnemies() {
@@ -127,14 +144,41 @@ function handleTouchEnd(e) {
 	}
 }
 
+function handleMouseDown(e) {
+	e.preventDefault();
+	if (e.clientX < 860 && e.clientX > 100) {
+		initThrow(e.clientX, e.clientY);
+	}else if (e.clientX < 100 && e.clientY > 560) {
+		handleRt(e);
+	}else if (e.clientX > 860 && e.clientY > 560) {
+		handleLf(e);
+	}else {
+		handleUp(e);
+	}
+}
+
+function handleMouseUp(e) {
+	e.preventDefault();
+	if(throwing) {
+		throwProjectile(e);
+		throwing = false;
+	}else if (e.clientX < 100 && e.clientY > 560) {
+		handleRtLift(e);
+	}else if (e.clientX > 860 && e.clientY > 560) {
+		handleLfLift(e);
+	}else {
+		handleUpLift(e);
+	}
+}
+
 function initThrow(x, y) {
 	throwing = true;
 	throwStart = [x, y];
 }
 
-function throwProjectile(t) {
-	var vX = (throwStart[0] - t.clientX) * 0.1 + barry.vX,
-		vY = (throwStart[1] - t.clientY) * 0.1 + barry.vY,
+function throwProjectile(e) {
+	var vX = (throwStart[0] - e.clientX) * -0.1 + barry.vX,
+		vY = (throwStart[1] - e.clientY) * -0.1 + barry.vY,
 		p = new Projectile(barry.x, barry.y - 40, vX, vY);
 	POBJS.push(p);
 	level.addChild(p);

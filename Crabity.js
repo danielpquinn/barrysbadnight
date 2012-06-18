@@ -20,8 +20,7 @@
 
 		self.width = 40;
 		self.height = 40;
-		self.alertDist = 300;
-		self.angerDist = 200;
+		self.alertDist = 100;
 		self.state = 'stopped';
 		self.angryAt = {};
 		self.timeAware = 3000;
@@ -39,7 +38,6 @@
 		];
 
 		self.rest = function() {
-			console.log('resting');
 			self.state = 'stopped';
 			self.angryAt = {};
 			self.vX = 0;
@@ -48,7 +46,6 @@
 		self.anger = function() {
 			if(self.state != 'angered') {
 				self.state = 'angered';
-				console.log(self.state);
 				this.vY = -15;
 				self.awareTimer = setTimeout(function() {
 					self.rest();
@@ -56,8 +53,18 @@
 			}
 		};
 
+		self.onHit = function() {
+			var n;
+			for(n in POBJS) {
+				if(self.isAwareOf.hasValue(POBJS[n].name)) {
+					self.angryAt = POBJS[n];
+				}
+			}
+			self.anger();
+		};
+
 		handleCrabityAlerted = function() {
-			console.log('alerted');
+			self.vY = Math.random() * -5 - 5;
 			self.state = 'alerted';
 		};
 
@@ -117,22 +124,19 @@
 		for(n in POBJS) {
 			// Nesting ifs ;)
 			if(this.isAwareOf.hasValue(POBJS[n].name)) {
-				if(Math.abs(POBJS[n].x - this.x) < this.angerDist && Math.abs(POBJS[n].y - this.y) < this.angerDist ) {
-					this.angryAt = POBJS[n];
-					this.anger();
-				}else if(Math.abs(POBJS[n].x - this.x) < this.alertDist && Math.abs(POBJS[n].y - this.y) < this.alertDist ) {
+				if(Math.abs(POBJS[n].x - this.x) < this.alertDist && Math.abs(POBJS[n].y - this.y) < this.alertDist ) {
 					this.becomeAlert();
 				}
 			}
 		}
 
 		if (this.state === 'angered') {
-			// Too much mathing?
-			try {
+			
+			// Too much maths?
+			if(this.angryAt.x - this.x !== 0) {
 				this.vX = this.speed * ((this.angryAt.x - this.x) / (Math.abs(this.x - this.angryAt.x)));
-			}catch(err) {
-				console.log(err);
 			}
+
 			if (this.vX < 0) {
 				if (this.currentAnimation != 'attack') {
 					this.gotoAndPlay('attack');
@@ -141,6 +145,11 @@
 				if (this.currentAnimation != 'attack_h') {
 					this.gotoAndPlay('attack_h');
 				}
+			}
+		}else if (this.state === 'hit') {
+			console.log(this.state);
+			if (this.currentAnimation != 'hit') {
+				this.gotoAndPlay('hit');
 			}
 		}else if (this.state === 'alerted') {
 			if (this.currentAnimation != 'alerted') {

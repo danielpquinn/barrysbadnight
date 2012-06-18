@@ -6,12 +6,12 @@ body {
 }
 
 #canvas {
-    background: url('../images/lvl1Bg.png') left bottom;
+    background: url('../images/level-1-bg.png') left bottom;
 }
 
 #game {
-		margin: 0 auto;
-		text-align: left;
+	margin: 0 auto;
+	text-align: left;
     position: relative;
 }
 
