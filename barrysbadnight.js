@@ -1,5 +1,6 @@
 var canvas;       // place to put canvas
 var stage;        // stage for game to take place on
+var gameState;    // Current state of the game
 var level;        // current level
 var lvlArr;       // tile array
 var barry;        // our hero, Barry
@@ -16,6 +17,7 @@ var KEYCODE_SPACE  = 32;  //usefull keycode
 var KEYCODE_UP     = 38;  //usefull keycode
 var KEYCODE_LEFT   = 37;  //usefull keycode
 var KEYCODE_RIGHT  = 39;  //usefull keycode
+var KEYCODE_ENTER  = 13;  //usefull keycode
 
 var GRAVITY  = 1.5;   // global gravity
 var TILESIZE = 40;    // global tilesize
@@ -30,7 +32,7 @@ document.ontouchend   = handleTouchEnd;
 document.onmousedown  = handleMouseDown;
 document.onmouseup  = handleMouseUp;
 
-// custom generic event to help simulate synchronous asset loading
+// custom generic event
 function fireEvent(name, target) {
 	var evt = document.createEvent('Events');
 	evt.initEvent(name, true, true); //true for can bubble, true for cancelable
@@ -56,7 +58,29 @@ function handleLevelLoaded() {
 	stage.addChild(level);
 	barry = new Barry(level.levelData.startPos[1] * TILESIZE, level.levelData.startPos[0] * TILESIZE);
 	addEnemies();
+	addControls();
 	window.addEventListener('barryLoaded', handleBarryLoaded, false);
+	window.addEventListener('barryDying', handleBarryDying, false);
+	window.addEventListener('barryDied', handleBarryDied, false);
+}
+
+function addControls() {
+	var btnLeft = new Bitmap('images/btn-left.png'),
+		btnRight = new Bitmap('images/btn-right.png'),
+		btnUpLeft = new Bitmap('images/btn-up.png'),
+		btnUpRight = new Bitmap('images/btn-up.png');
+	btnLeft.x = 10;
+	btnLeft.y = 560;
+	btnRight.x = 880;
+	btnRight.y = 560;
+	btnUpLeft.x = 10;
+	btnUpLeft.y = 480;
+	btnUpRight.x = 880;
+	btnUpRight.y = 480;
+	stage.addChild(btnLeft);
+	stage.addChild(btnRight);
+	stage.addChild(btnUpLeft);
+	stage.addChild(btnUpRight);
 }
 
 function handleBarryLoaded() {
@@ -69,17 +93,26 @@ function handleBarryLoaded() {
 	Ticker.addListener(window);
 	camera = new Camera(stage, level, barry);
 
-	console.log(POBJS.length);
 	for(n in POBJS) {
 		// Nesting ifs again ;)
 		if(n.name != 'projectile') {
-			console.log(n);
 			if(this.x < (POBJS[n].x + this.radius) && this.x > (POBJS[n].x - this.radius)) {
 				console.log('hit');
 			}
 		}
 	}
 
+}
+
+function handleBarryDying() {
+	Ticker.setInterval(120);
+}
+
+function handleBarryDied() {
+	pause();
+	setTimeout(3000, function(){
+		init();	
+	});
 }
 
 function addEnemies() {
@@ -101,9 +134,10 @@ function addEnemies() {
 //allow for arrow control scheme
 function handleKeyDown(e) {
 	switch(e.keyCode) {
-		case KEYCODE_LEFT:	handleLf(e); break;
+		case KEYCODE_ENTER:	handleEnter(e); break;
 		case KEYCODE_RIGHT: handleRt(e); break;
 		case KEYCODE_UP:	handleUp(e); break;
+		case KEYCODE_LEFT:	handleLf(e); break;
 	}
 }
 
@@ -115,15 +149,19 @@ function handleKeyUp(e) {
 	}
 }
 
+function handleEnter() {
+	pause();
+}
+
 function handleTouchStart(e) {
 	e.preventDefault();
 	var t = e.changedTouches[0];
-	if (t.clientX < 860 && t.clientX > 100) {
+	if (t.clientX < 760 && t.clientX > 200) {
 		initThrow(t.clientX, t.clientY);
-	}else if (t.clientX < 100 && t.clientY > 560) {
-		handleRt(e);
-	}else if (t.clientX > 860 && t.clientY > 560) {
+	}else if (t.clientX < 200 && t.clientY > 560) {
 		handleLf(e);
+	}else if (t.clientX > 760 && t.clientY > 560) {
+		handleRt(e);
 	}else {
 		handleUp(e);
 	}
@@ -135,10 +173,10 @@ function handleTouchEnd(e) {
 	if(throwing) {
 		throwProjectile(t);
 		throwing = false;
-	}else if (t.clientX < 100 && t.clientY > 560) {
-		handleRtLift(e);
-	}else if (t.clientX > 860 && t.clientY > 560) {
+	}else if (t.clientX < 200 && t.clientY > 560) {
 		handleLfLift(e);
+	}else if (t.clientX > 760 && t.clientY > 560) {
+		handleRtLift(e);
 	}else {
 		handleUpLift(e);
 	}
@@ -146,12 +184,12 @@ function handleTouchEnd(e) {
 
 function handleMouseDown(e) {
 	e.preventDefault();
-	if (e.clientX < 860 && e.clientX > 100) {
+	if (e.clientX < 760 && e.clientX > 200) {
 		initThrow(e.clientX, e.clientY);
-	}else if (e.clientX < 100 && e.clientY > 560) {
-		handleRt(e);
-	}else if (e.clientX > 860 && e.clientY > 560) {
+	}else if (e.clientX < 200 && e.clientY > 560) {
 		handleLf(e);
+	}else if (e.clientX > 760 && e.clientY > 560) {
+		handleRt(e);
 	}else {
 		handleUp(e);
 	}
@@ -163,9 +201,9 @@ function handleMouseUp(e) {
 		throwProjectile(e);
 		throwing = false;
 	}else if (e.clientX < 100 && e.clientY > 560) {
-		handleRtLift(e);
-	}else if (e.clientX > 860 && e.clientY > 560) {
 		handleLfLift(e);
+	}else if (e.clientX > 760 && e.clientY > 560) {
+		handleRtLift(e);
 	}else {
 		handleUpLift(e);
 	}
@@ -226,9 +264,9 @@ function checkCollisions(ob) {
 		ob.vX = 0;
 	}
 
-	// Collision detection moving vertically
+	// Vertical collision detection
 	if (ob.vY > 0) {
-		if ( lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX + (h / 2)) / TILESIZE)] === 1 ||	lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX - (h / 2)) / TILESIZE)] === 1) {
+		if ( lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX + (h / 2)) / TILESIZE)] === 1 || lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX - (h / 2)) / TILESIZE)] === 1) {
 			ob.vY *= ob.restitution;
 			ob.pY = Math.floor(ob.pY / TILESIZE) * TILESIZE;
 		}
@@ -254,6 +292,24 @@ function checkCollisions(ob) {
 
 	ob.x = Math.floor(ob.pX);
 	ob.y = Math.floor(ob.pY);
+}
+
+function pause() {
+	var i;
+	if(gameState === 'paused') {
+		gameState = 'playing';
+		for(i = 0; i < level.children.length; i++) {
+			level.children[i].alpha = 1;
+		}
+		Ticker.setPaused(false);
+	} else {
+		gameState = 'paused';
+		for(i = 0; i < level.children.length; i++) {
+			level.children[i].alpha = 0.5;
+			stage.update();
+		}
+		Ticker.setPaused(true);
+	}
 }
 
 function tick() {
