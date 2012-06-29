@@ -3,6 +3,8 @@ var stage;        // stage for game to take place on
 var gameState;    // Current state of the game
 var level;        // current level
 var lvlArr;       // tile array
+var lvlWidth;     // level width
+var lvlHeight;    // level height
 var barry;        // our hero, Barry
 var camera;       // camera
 var lfHeld;       // is key pressed
@@ -23,6 +25,7 @@ var GRAVITY  = 1.5;   // global gravity
 var TILESIZE = 40;    // global tilesize
 var DEBUG    = true;  // debug mode
 var POBJS;            // Array of objects to act on
+var BREAKABLES;       // Array of breakable tiles
 
 // register key functions
 document.onkeydown    = handleKeyDown;
@@ -44,6 +47,7 @@ function init() {
 	canvas = document.getElementById('canvas');
 	fpsBox = document.getElementById('fps');
 	POBJS  = [];
+	BREAKABLES = [];
 	stage  = new Stage(canvas);
 	stage.name = 'gameCanvas';
 
@@ -55,9 +59,11 @@ function init() {
 
 function handleLevelLoaded() {
 	lvlArr = level.levelData.levelArray;
+	lvlWidth = lvlArr[0].length * TILESIZE;
+	lvlHeight = lvlArr.length * TILESIZE;
 	stage.addChild(level);
 	barry = new Barry(level.levelData.startPos[1] * TILESIZE, level.levelData.startPos[0] * TILESIZE);
-	addEnemies();
+	addObjects();
 	addControls();
 	window.addEventListener('barryLoaded', handleBarryLoaded, false);
 	window.addEventListener('barryDying', handleBarryDying, false);
@@ -115,7 +121,7 @@ function handleBarryDied() {
 	});
 }
 
-function addEnemies() {
+function addObjects() {
 	for (var i = 0; i < lvlArr.length; i++) {
 		for (var n = 0; n < lvlArr[0].length; n++) {
 			switch (lvlArr[i][n]) {
@@ -125,6 +131,11 @@ function addEnemies() {
 				var enemy = new Crabity(n * TILESIZE, i * TILESIZE);
 				POBJS.push(enemy);
 				level.addChild(enemy);
+				break;
+			case 4:
+				var breakable = new Breakable(n * TILESIZE, i * TILESIZE);
+				BREAKABLES.push(breakable);
+				level.addChild(breakable);
 				break;
 			}
 		}
@@ -156,9 +167,9 @@ function handleEnter() {
 function handleTouchStart(e) {
 	e.preventDefault();
 	var t = e.changedTouches[0];
-	if (t.clientX < 760 && t.clientX > 200) {
+	if (t.clientX < 760 && t.clientX > 100) {
 		initThrow(t.clientX, t.clientY);
-	}else if (t.clientX < 200 && t.clientY > 560) {
+	}else if (t.clientX < 100 && t.clientY > 560) {
 		handleLf(e);
 	}else if (t.clientX > 760 && t.clientY > 560) {
 		handleRt(e);
@@ -173,7 +184,7 @@ function handleTouchEnd(e) {
 	if(throwing) {
 		throwProjectile(t);
 		throwing = false;
-	}else if (t.clientX < 200 && t.clientY > 560) {
+	}else if (t.clientX < 100 && t.clientY > 560) {
 		handleLfLift(e);
 	}else if (t.clientX > 760 && t.clientY > 560) {
 		handleRtLift(e);
@@ -184,9 +195,9 @@ function handleTouchEnd(e) {
 
 function handleMouseDown(e) {
 	e.preventDefault();
-	if (e.clientX < 760 && e.clientX > 200) {
+	if (e.clientX < 760 && e.clientX > 100) {
 		initThrow(e.clientX, e.clientY);
-	}else if (e.clientX < 200 && e.clientY > 560) {
+	}else if (e.clientX < 100 && e.clientY > 560) {
 		handleLf(e);
 	}else if (e.clientX > 760 && e.clientY > 560) {
 		handleRt(e);
@@ -252,6 +263,30 @@ function handleUpLift(event) {
     upHeld = false;
 }
 
+function checkTileLeft(ob, tileIndex) {
+
+	var h = ob.width / 2;
+
+	switch(tileIndex) {
+		case 1:
+			ob.vX *= ob.restitution;
+			ob.pX = (Math.floor(ob.pX / TILESIZE) * TILESIZE) + h;
+			break;
+	}
+}
+
+function checkTileRight(ob, tileIndex) {
+
+	var h = ob.width / 2;
+
+	switch(tileIndex) {
+		case 1:
+			ob.vX *= ob.restitution;
+			ob.pX = (Math.ceil(ob.pX / TILESIZE) * TILESIZE) - h;
+			break;
+	}
+}
+
 function checkCollisions(ob) {
 
 	var h = ob.width / 2;
@@ -264,39 +299,58 @@ function checkCollisions(ob) {
 		ob.vX = 0;
 	}
 
-	// Vertical collision detection
-	if (ob.vY > 0) {
-		if ( lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX + (h / 2)) / TILESIZE)] === 1 || lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX - (h / 2)) / TILESIZE)] === 1) {
-			ob.vY *= ob.restitution;
-			ob.pY = Math.floor(ob.pY / TILESIZE) * TILESIZE;
+	// Make sure we're within the boundaries
+	if (ob.pX < lvlWidth && ob.pX > 0 && ob.pY < lvlHeight && ob.pY > 0) {
+		// Vertical collision detection
+		if (ob.vY > 0) {
+			if ( lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX + (h / 2)) / TILESIZE)] === 1 || lvlArr[Math.floor(ob.pY / TILESIZE)][Math.floor((ob.pX - (h / 2)) / TILESIZE)] === 1) {
+				ob.vY *= ob.restitution;
+				ob.pY = Math.floor(ob.pY / TILESIZE) * TILESIZE;
+			}
+		} else if (ob.vY < 0) {
+			if ( lvlArr[Math.ceil((ob.pY - ob.height) / TILESIZE - 1)][Math.floor((ob.pX + h - (h / 2)) / TILESIZE)] === 1 || lvlArr[Math.ceil((ob.pY - ob.height) / TILESIZE - 1)][Math.floor((ob.pX - h + (h / 2)) / TILESIZE)] === 1) {
+				ob.vY = 1;
+				ob.pY = Math.ceil(ob.pY / TILESIZE) * TILESIZE;
+			}
 		}
-	} else if (ob.vY < 0) {
-		if ( lvlArr[Math.ceil((ob.pY - ob.height) / TILESIZE - 1)][Math.floor((ob.pX + h - (h / 2)) / TILESIZE)] === 1 || lvlArr[Math.ceil((ob.pY - ob.height) / TILESIZE - 1)][Math.floor((ob.pX - h + (h / 2)) / TILESIZE)] === 1) {
-			ob.vY = 1;
-			ob.pY = Math.ceil(ob.pY / TILESIZE) * TILESIZE;
-		}
-	}
 
-	// Horizontal collision detection
-	if (ob.vX > 0) {
-		if (	lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1) {
-			ob.vX *= ob.restitution;
-			ob.pX = (Math.ceil(ob.pX / TILESIZE) * TILESIZE) - h;
-		}
-	} else if (ob.vX < 0) {
-		if (lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1) {
-			ob.vX *= ob.restitution;
-			ob.pX = (Math.floor(ob.pX / TILESIZE) * TILESIZE) + h;
-		}
-	}
+		// Horizontal collision detection
+		// if (ob.vX > 0) {
+		// 	if (ob.pX > lvlArr[0].length * TILESIZE - 10) {
+		// 		ob.parent.removeChild(ob);
+		// 		POBJS.splice(POBJS.indexOf(ob), 1);
+		// 	} else if (	lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)] === 1) {
+		// 		ob.vX *= ob.restitution;
+		// 		ob.pX = (Math.ceil(ob.pX / TILESIZE) * TILESIZE) - h;
+		// 	}
+		// } else if (ob.vX < 0) {
+		// 	if (lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1 ||	lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1) {
+		// 		ob.vX *= ob.restitution;
+		// 		ob.pX = (Math.floor(ob.pX / TILESIZE) * TILESIZE) + h;
+		// 	}
+		// }
 
-	ob.x = Math.floor(ob.pX);
-	ob.y = Math.floor(ob.pY);
+		if (ob.vX > 0) {
+			checkTileRight(ob, lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)]);
+			checkTileRight(ob, lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)]);
+			checkTileRight(ob, lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX + h) / TILESIZE)]);
+		} else if (ob.vX < 0) {
+			checkTileLeft(ob, lvlArr[Math.floor((ob.pY - 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)]);
+			checkTileLeft(ob, lvlArr[Math.floor((ob.pY - ob.height + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)] === 1);
+			checkTileLeft(ob, lvlArr[Math.floor((ob.pY - (ob.height / 2) + 1) / TILESIZE)][Math.floor((ob.pX - h) / TILESIZE)]);
+		}
+
+		ob.x = Math.floor(ob.pX);
+		ob.y = Math.floor(ob.pY);
+	} else {
+		ob.parent.removeChild(ob);
+		POBJS.splice(POBJS.indexOf(ob), 1);
+	}
 }
 
 function pause() {
 	var i;
-	if(gameState === 'paused') {
+	if (gameState === 'paused') {
 		gameState = 'playing';
 		for(i = 0; i < level.children.length; i++) {
 			level.children[i].alpha = 1;

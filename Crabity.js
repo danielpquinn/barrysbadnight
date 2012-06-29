@@ -1,5 +1,6 @@
 (function(window) {
 
+	// The horrifying crabity
 	function Crabity(startX, startY) {
 		this.initialize(startX, startY);
 	}

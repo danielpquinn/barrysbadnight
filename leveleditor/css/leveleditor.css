@@ -21,6 +21,10 @@ body {
     background: #ff5500;
 }
 
+.breakabletile {
+    background: blue;
+}
+
 .clear {
     clear: both;
 }

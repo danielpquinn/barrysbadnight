@@ -19,7 +19,7 @@ $('document').ready(function() {
         'startPos': [0, 0],
         'levelArray': levelArray
     }
-    tileTypes = ['empty', 'tile', 'enemy', 'startposition'];
+    tileTypes = ['empty', 'tile', 'enemy', 'startposition', 'breakabletile'];
     currType = 0;
 
     function tileTypeButtons() {
