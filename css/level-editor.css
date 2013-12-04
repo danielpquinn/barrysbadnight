@@ -1,0 +1,43 @@
+#stage {
+  position: relative;
+}
+
+.tile {
+  position: absolute;
+  border: 1px solid #888;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.normal {
+  background-color: #999;
+}
+
+.slope-right::after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 7px solid #999;
+  -webkit-transform: rotate(45deg);
+}
+
+.slope-left::after {
+  content: ' ';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 7px solid #999;
+  -webkit-transform: rotate(-45deg);
+}
