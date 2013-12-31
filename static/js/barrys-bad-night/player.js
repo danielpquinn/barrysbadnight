@@ -1,17 +1,18 @@
 define([
   'barrys-bad-night/globals',
+  'barrys-bad-night/projectiles',
+  'barrys-bad-night/Projectile',
   'easel'
-], function (Globals) {
+], function (Globals, projectiles, Projectile) {
 
-  function Player(name) {
-    this.initialize(name);
+  function Player(id) {
+    this.initialize(id);
   }
 
   var p = Player.prototype = new createjs.Shape();
 
   p.vX = 0;
   p.vY = 0;
-  p.friction = 0.7;
   p.rightPressed = false;
   p.leftPressed = false;
   p.upPressed = false;
@@ -21,14 +22,14 @@ define([
 
   p.Shape_initialize = p.initialize;
 
-  p.initialize = function (name) {
+  p.initialize = function (id) {
     var g = new createjs.Graphics().beginFill('#'+Math.floor(Math.random()*16777215).toString(16)).drawRect(0, 0, 18, 38);
     this.Shape_initialize(g);
-    this.name = name;
+    this.id = id;
     this.cache(0, 0, this.width, this.height);
     this.snapToPixel = true;
     this.bindEvents();
-  }
+  };
 
   p.bindEvents = function () {
     var self = this;
@@ -38,7 +39,10 @@ define([
     document.addEventListener('keyup', function (e) {
       self.handleKeyUp(e);
     });
-  }
+    p.on('tick', function (e) {
+      self.onTick(e);
+    });
+  };
 
   p.handleKeyDown = function (e) {
     switch (e.keyCode) {
@@ -53,7 +57,7 @@ define([
         this.jump();
         return;
     }
-  }
+  };
 
   p.handleKeyUp = function (e) {
     switch (e.keyCode) {
@@ -75,23 +79,30 @@ define([
       this.isJumping = true;
       this.vY = Globals.jumpForce * -1;
     }
-  }
+  };
 
-  p.tick = function (e) {
+  p.onTick = function (e) {
     this.vY += Globals.gravity;
-    this.vX *= this.friction;
     this.y += this.vY;
     if (this.rightPressed && this.vX <= Globals.maxSpeed) {
-      this.vX += 2;
+      this.vX += Globals.playerAcceleration;
     }
     if (this.leftPressed && this.vX >= Globals.maxSpeed * -1) {
-      this.vX -= 2;
+      this.vX -= Globals.playerAcceleration;
     }
     if (Math.abs(this.vX) < 1) {
       this.vX = 0;
     }
-    this.x += Math.floor(this.vX);
-  }
+    if (!this.rightPressed && !this.leftPressed) {
+      this.vX *= Globals.friction;
+    }
+    this.x += this.vX;
+  };
+
+  p.fireProjectile = function (vX, vY) {
+
+    projectiles.push(new Projectile(vX, vY));
+  };
 
   return Player;
 

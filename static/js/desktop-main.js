@@ -5,9 +5,9 @@ require.config({
     }
   },
   'paths': {
-    'jquery': 'vendor/jquery',
-    'easel': 'vendor/easel',
-    'underscore': 'vendor/underscore'
+    'jquery': '../bower_components/jquery/jquery',
+    'easel': '../bower_components/easeljs/lib/easeljs-NEXT.min',
+    'underscore': '../bower_components/underscore/underscore'
   }
 });
 
@@ -23,26 +23,7 @@ require([
   $(document).ready(function (e) {
 
     // Simple pubsub
-    var topics = {},
-      $fps = $('#fps');
-
-    $.Topic = function (id) {
-      var callbacks,
-        topic = id && topics[id];
-
-      if (!topic) {
-        callbacks = $.Callbacks();
-        topic = {
-          publish: callbacks.fire,
-          subscribe: callbacks.add,
-          unsubscribe: callbacks.remove
-        }
-        if (id) {
-          topics[ id ] = topic;
-        }
-      };
-      return topic;
-    }
+    $fps = $('#fps');
 
     // Create new game instance
     var game = new BarrysBadNight('game-canvas');
@@ -56,8 +37,7 @@ require([
     createjs.Ticker.setFPS(Globals.fps);
 
     // start game loop
-    createjs.Ticker.addEventListener('tick', function (e) {
-      game.update();
+    createjs.Ticker.on('tick', function (e) {
       $fps.text(Math.floor(createjs.Ticker.getMeasuredFPS()));
     });
 

@@ -2,30 +2,101 @@ define([
   'barrys-bad-night/globals',
   'barrys-bad-night/level',
   'barrys-bad-night/camera',
+  'barrys-bad-night/player',
+  'barrys-bad-night/projectiles',
   'easel'
-], function (Globals, Level, Camera) {
+], function (Globals, Level, Camera, Player, projectiles) {
 
 
   function BarrysBadNight(canvasId) {
+    this.io = io.connect();
     this.stage = new createjs.Stage(document.getElementById(canvasId));
     this.level = null;
+    this.players = [];
+    this.projectiles = [];
     this.camera = null;
-  }
+    this.bindEvents();
+    window.BarrysBadNight = this;
+  };
 
   var b = BarrysBadNight.prototype;
 
-  b.update = function (e) {
+  b.bindEvents = function () {
     var self = this;
 
-    _.each(this.level.children, function (innerChild) {
-      if (innerChild.tick) {
-        innerChild.tick(e);
-        self.doCollisions(innerChild);
-      }
+    createjs.Ticker.on('tick', function () {
+      self.updateStage();
     });
-    this.stage.update();
-    this.camera.follow();
-  }
+
+    self.io.on('connection data', function (data) { self.onConnectionData(data); });
+    self.io.on('player connected', function (data) { self.addPlayer(data.id); });
+    self.io.on('player disconnected', function (data) { self.removePlayer(data.id); });
+    self.io.on('key pressed', function (data) { self.onKeyPressed(data); });
+    self.io.on('key released', function (data) { self.onKeyReleased(data); });
+    self.io.on('projectile fired', function (data) { self.onProjectileFired(data); });
+  };
+
+  b.onConnectionData = function (data) {
+    var self = this;
+
+    _.each(data.players, function (player) {
+      console.log(player);
+      self.addPlayer(player.id);
+    });
+  };
+
+  b.addPlayer = function (id) {
+    var player = new Player(id);
+
+    player.x = 100;
+    player.y = 100;
+
+    this.players.push(player);
+    this.level.addChild(player);
+    this.camera.focus(player);
+    console.log(this.players);
+  };
+
+  b.addProjectile = function (id) {
+    
+  };
+
+  b.removePlayer = function (id) {
+    console.log(_.findWhere(this.players, {id: id}));
+    this.level.removeChild(_.findWhere(this.players, {id: id}));
+    this.players = _.without(this.players, _.findWhere(this.players, {id: id}));
+  };
+
+  b.onKeyPressed = function (data) {
+    _.findWhere(this.players, {id: data.id}).handleKeyDown({
+      keyCode: data.keyCode
+    });
+  };
+
+  b.onKeyReleased = function (data) {
+    _.findWhere(this.players, {id: data.id}).handleKeyUp({
+      keyCode: data.keyCode
+    });
+  };
+
+  b.onProjectileFired = function (data) {
+    _.findWhere(this.players, {id: data.id}).fireProjectile(data.vX, data.vY);
+  };
+
+  b.onStageTick = function (e) {
+    var self = this;
+
+    _.each(self.level.children, function (innerChild) {
+      self.doCollisions(innerChild);
+    });
+    self.camera.follow();
+  };
+
+  b.updateStage = function (e) {
+    var self = this;
+
+    self.stage.update();
+  };
 
   b.doCollisions = function (child) {
     var tIndex = Math.floor((child.y) / Globals.tileSize),
@@ -76,7 +147,7 @@ define([
         child.x = lIndex * Globals.tileSize + Globals.tileSize;
       }
     }
-  }
+  };
 
   b.loadLevel = function (levelData) {
     var self = this;
@@ -86,13 +157,12 @@ define([
     }).done(function(data) {
       self.level = new Level(data.title, data.tiles, data.playerStart);
       self.camera = new Camera(self.stage, self.level);
-      self.camera.focus(self.level.player);
       self.stage.addChild(self.level);
-
-      $.Topic('gameLoaded').publish(self);
-
+      self.stage.on('tick', function (e) {
+        self.onStageTick(e);
+      });
     });
-  }
+  };
 
   return BarrysBadNight;
 

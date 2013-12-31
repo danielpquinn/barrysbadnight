@@ -1,0 +1,40 @@
+<html>
+<head>
+  <title></title>
+  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="/bower_components/requirejs/require.js" data-main="/js/mobile-main.js"></script>
+  <style>
+
+  .launcher {
+    width: 100%;
+    height: 80%;
+    border: 1px solid black;
+  }
+
+  .key {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-color: black;
+    bottom: 50px;
+  }
+  #left {
+    left: 20px;
+  }
+  #right {
+    left: 140px;
+  }
+  #jump {
+    right: 20px;
+  }
+  </style>
+</head>
+<body>
+  <h1>Mobile</h1>
+  <div class="launcher"></div>
+  <div id="left" class="key" data-keycode="37"></div>
+  <div id="right" class="key" data-keycode="39"></div>
+  <div id="jump" class="key" data-keycode="38"></div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "racer",
+  "version": "0.0.0",
+  "authors": [
+    "Dan Quinn <dan.quinn@smashingideas.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.9",
+    "jquery": "~2.0.3",
+    "underscore": "~1.5.2",
+    "easeljs": "*",
+    "bootstrap": "~3.0.3"
+  }
+}

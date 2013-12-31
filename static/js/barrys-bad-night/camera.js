@@ -17,6 +17,7 @@ define([
   }
 
   c.follow = function () {
+    if (!this.focalPoint) { return; }
     this.container.x = (this.focalPoint.x * -1) + this.offsetX;
     this.container.y = (this.focalPoint.y * -1) + this.offsetY;
     if (this.container.x > 0) {

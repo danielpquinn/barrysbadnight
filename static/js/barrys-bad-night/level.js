@@ -10,8 +10,6 @@ define([
 
   var l = Level.prototype = new createjs.Container();
 
-  l.title = "";
-
   l.Container_initialize = l.initialize;
 
   l.initialize = function (title, tiles, playerStart) {
@@ -22,11 +20,7 @@ define([
     this.height = tiles.length * Globals.tileSize;
     this.tileContainer = new createjs.Container();
     this.drawTiles(tiles);
-    this.player = new Player('Barry');
-    this.player.x = playerStart[0];
-    this.player.y = playerStart[1];
-    this.addChild(this.player);
-  }
+  };
 
   l.drawTiles = function (tiles) {
     var i = 0;
@@ -71,7 +65,7 @@ define([
     this.addChild(this.tileContainer);
     this.tileContainer.cache(0, 0, this.width, this.height);
     this.tileContainer.removeAllChildren();
-  }
+  };
 
   return Level;
 
